@@ -64,10 +64,21 @@ export function categoryStats(categories, questions, terms, items) {
   return out;
 }
 
-export function overallStats(stats) {
-  const rows = Object.values(stats);
+/**
+ * Overall numbers.
+ * readiness: domain mastery weighted by each domain's share of the real exam,
+ *            so a weak heavy domain (Troubleshooting, 24%) counts for more than
+ *            a weak light one (Security, 14%). Unknown categories weigh equally.
+ * pct:       plain mastery across every question.
+ */
+export function overallStats(stats, weightOf = () => 1) {
+  const entries = Object.entries(stats);
+  const rows = entries.map(([, r]) => r);
   const total = rows.reduce((a, r) => a + r.total, 0);
   const seen = rows.reduce((a, r) => a + r.seen, 0);
   const pct = rows.length ? Math.round(rows.reduce((a, r) => a + r.pct * r.total, 0) / Math.max(1, total)) : 0;
-  return { total, seen, pct };
+  const weights = entries.map(([c]) => weightOf(c) || 1);
+  const wSum = weights.reduce((a, b) => a + b, 0) || 1;
+  const readiness = Math.round(entries.reduce((a, [, r], i) => a + r.pct * weights[i], 0) / wSum);
+  return { total, seen, pct, readiness };
 }

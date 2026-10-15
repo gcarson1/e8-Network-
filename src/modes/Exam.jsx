@@ -9,13 +9,13 @@ import { EXAM, domainFor } from '../lib/bank.js';
 import { fmtClock, plural, sameSet, shuffle, weightedSample } from '../lib/util.js';
 import { Breakdown, ReviewList, ScoreLine } from './Results.jsx';
 
-export default function Exam() {
+export default function Exam({ view }) {
   const { questions, recordResults } = useStudy();
   const { setGuard, confirm, go } = useNav();
   const presets = [EXAM.questions, 45, 20].filter((n) => n <= questions.length);
   if (!presets.length) presets.push(questions.length);
 
-  const [count, setCount] = useState(presets[0]);
+  const [count, setCount] = useState(() => (presets.includes(view?.preset?.count) ? view.preset.count : presets[0]));
   const [weighting, setWeighting] = useState('official');
   const [s, setS] = useState(null);
   const [now, setNow] = useState(Date.now());
@@ -165,8 +165,8 @@ export default function Exam() {
           <Eyebrow>{s.timedOut ? 'Time ran out' : 'Exam result'}</Eyebrow>
         </div>
         <ScoreLine pct={(correct / graded.length) * 100} correct={correct} total={graded.length} elapsed={(s.endedAt - s.startedAt) / 1000} showScaled />
-        {skipped > 0 && <p className="muted small" style={{ marginTop: 12 }}>{plural(skipped, 'question')} left blank. Blanks count as wrong here but don't touch your mastery.</p>}
-        <div className="form-foot" style={{ margin: '22px 0 28px' }}>
+        {skipped > 0 && <p className="muted small" style={{ marginTop: 'var(--sp-3)' }}>{plural(skipped, 'question')} left blank. Blanks count as wrong here but don't touch your mastery.</p>}
+        <div className="form-foot" style={{ margin: 'var(--sp-6) 0 var(--sp-7)' }}>
           {missedIds.length > 0 && (
             <button className="btn primary" onClick={() => go({ name: 'practice', preset: { ids: missedIds } })}>
               Practice the {missedIds.length} missed
@@ -176,7 +176,7 @@ export default function Exam() {
         </div>
         <section className="sec">
           <Eyebrow>By domain</Eyebrow>
-          <div style={{ marginTop: 12 }}><Breakdown graded={graded} /></div>
+          <div style={{ marginTop: 'var(--sp-3)' }}><Breakdown graded={graded} /></div>
         </section>
         <section className="sec">
           <ReviewList graded={graded} />
@@ -199,7 +199,7 @@ export default function Exam() {
           right={
             <>
               <span className={`timer ${remaining < 300 ? 'low' : ''}`} role="timer" aria-label="Time remaining">{fmtClock(remaining)}</span>
-              <button className={`btn ${answered === s.qs.length ? 'primary' : ''}`} style={{ marginLeft: 10 }} onClick={askSubmit}>Submit</button>
+              <button className={`btn ${answered === s.qs.length ? 'primary' : ''}`} style={{ marginLeft: 'var(--sp-3)' }} onClick={askSubmit}>Submit</button>
             </>
           }
         />
@@ -224,7 +224,7 @@ export default function Exam() {
     >
       <div className="spread qmeta">
         <Eyebrow n={`of ${s.qs.length}`}>Question {s.idx + 1}</Eyebrow>
-        <button className={`tbtn ${s.flags[q.id] ? 'on' : ''}`} onClick={toggleFlag} aria-pressed={!!s.flags[q.id]} style={{ marginRight: -8 }}>
+        <button className={`tbtn ${s.flags[q.id] ? 'on' : ''}`} onClick={toggleFlag} aria-pressed={!!s.flags[q.id]} style={{ marginRight: 'calc(var(--sp-2) * -1)' }}>
           <Icon name="flag" /> {s.flags[q.id] ? 'Flagged' : 'Flag'}
         </button>
       </div>
@@ -232,7 +232,7 @@ export default function Exam() {
         <QuestionView q={q} selected={answer} onToggle={choose} />
       </div>
       <div className="qactions">
-        <button className="tbtn" onClick={() => setIdx(s.idx - 1)} disabled={s.idx === 0} style={{ marginLeft: -8 }}>← Previous</button>
+        <button className="tbtn" onClick={() => setIdx(s.idx - 1)} disabled={s.idx === 0} style={{ marginLeft: 'calc(var(--sp-2) * -1)' }}>← Previous</button>
         <span className="spacer" />
         {isLast ? (
           <button className="btn primary" onClick={askSubmit}>Review & submit</button>

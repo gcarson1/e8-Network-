@@ -13,6 +13,8 @@ A single, self-contained HTML file for CompTIA Network+ (N10-009) study: a timed
 | Flashcards | Question-bank cards plus 80 built-in key terms. "Got it" and "Still learning" feed the same mastery stats. Smart Deck puts your weakest domains first. |
 | Labs | 14 topics, 41 hands-on activities in PBQ style: subnet calculator, VLSM planner, encapsulation walkthrough, firewall rule sets, RJ45 wiring (T568A/B), build-a-network placement, Wi-Fi channel planning, static routing, VLAN segmentation, TCP/DHCP/DNS sequences with predict-the-next-step, and diagnosis from real command output and security logs. Plus drills and references. |
 
+**Exam readiness** in the right rail is your mastery in each domain weighted by that domain's share of the real exam, so a weak Troubleshooting score (24% of the exam) counts for more than a weak Security score (14%). Home turns your data into a study plan: your weakest domain first, then questions you missed, then ones you haven't seen.
+
 During an exam, practice set or deck, the nav bar is replaced by a focus bar (timer, progress, Submit/Finish), and the side panel shows a live bubble grid with one square per question. Otherwise the side panel shows mastery by domain. Click a domain there to practice it.
 
 ## Saving progress
@@ -59,5 +61,6 @@ src/modes/        Home, Exam, Practice, Flashcards, Labs screens
 src/labs/         lab activities (+ kit.jsx: drills, ordering, sequence animator, case runner)
 src/labs/index.js lab registry: topics, activities, domains
 src/data/terms.js built-in key-terms flashcard deck
-src/styles.css    design system (monochrome; red/green only for right/wrong)
+src/styles.css    design system: rem tokens on a fluid root (16px laptop → 26px 4K), monochrome, red/green only for right/wrong
+src/fonts/        Inter and JetBrains Mono (Latin, variable), embedded in the HTML; both SIL Open Font License 1.1
 ```

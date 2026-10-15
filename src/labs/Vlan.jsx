@@ -82,7 +82,7 @@ export default function Vlan() {
   return (
     <div>
       <Task>Work through the goals below. Use the modes to assign VLANs, broadcast, or ping between PCs.</Task>
-      <div className="checklist" style={{ marginBottom: 20 }}>
+      <div className="checklist" style={{ marginBottom: 'var(--sp-5)' }}>
         {GOALS.map(([k, label]) => (
           <div key={k} className={done[k] ? 'done' : ''}><span className="mk">{done[k] ? '✓' : '○'}</span><span>{label}{k === 'one' && done.one ? ' (one)' : ''}</span></div>
         ))}
@@ -98,7 +98,7 @@ export default function Vlan() {
           Router on a stick: {router ? 'on' : 'off'}
         </button>
       </div>
-      <p className="faint small" style={{ margin: '10px 0 4px' }}>
+      <p className="faint small" style={{ margin: 'var(--sp-3) 0 var(--sp-1)' }}>
         {mode === 'assign' && 'Tap a PC to cycle its VLAN: 10 → 20 → 30.'}
         {mode === 'broadcast' && 'Tap a PC to send a broadcast (like an ARP request).'}
         {mode === 'ping' && 'Tap a source PC, then a destination.'}
@@ -148,10 +148,10 @@ export default function Vlan() {
         </svg>
       </div>
       <PanHint />
-      <div className="legend" style={{ marginTop: 10 }}>
+      <div className="legend" style={{ marginTop: 'var(--sp-3)' }}>
         {ORDER.map((v) => (
           <span key={v}>
-            <svg width="12" height="12" style={{ verticalAlign: -1, marginRight: 6 }} aria-hidden="true">
+            <svg viewBox="0 0 12 12" style={{ width: '0.75rem', height: '0.75rem', verticalAlign: '-0.0625rem', marginRight: 'var(--sp-1h)' }} aria-hidden="true">
               <rect x="0.5" y="0.5" width="11" height="11" style={{ fill: fillFor(v), stroke: 'var(--text)' }} />
             </svg>
             VLAN {v} · {VLANS[v].name}

@@ -35,13 +35,13 @@ export function Compare() {
             <span style={{ width: '50%', background: 'var(--s3)' }} />
           </span>
         </div>
-        <div className="legend" style={{ marginLeft: 54 }}>
+        <div className="legend" style={{ marginLeft: 'var(--sp-12)' }}>
           <span><i className="ink" />Routing prefix /48</span>
           <span><i style={{ background: 'var(--s2)' }} />Subnet ID 16</span>
           <span><i style={{ background: 'var(--s3)' }} />Interface ID 64</span>
         </div>
       </div>
-      <div className="scroll-x" style={{ marginTop: 22 }}>
+      <div className="scroll-x" style={{ marginTop: 'var(--sp-6)' }}>
         <table className="table">
           <thead><tr><th /><th>IPv4</th><th>IPv6</th></tr></thead>
           <tbody>
@@ -51,12 +51,12 @@ export function Compare() {
           </tbody>
         </table>
       </div>
-      <div style={{ marginTop: 28 }}>
-        <div className="eyebrow" style={{ marginBottom: 10 }}>Classify an IPv4 address</div>
+      <div style={{ marginTop: 'var(--sp-7)' }}>
+        <div className="eyebrow" style={{ marginBottom: 'var(--sp-3)' }}>Classify an IPv4 address</div>
         <div className="grid-2">
           <div className="stack-sm">
             <input className={`input ${n == null ? 'bad' : ''}`} value={v4} onChange={(e) => setV4(e.target.value)} aria-label="IPv4 address" spellCheck={false} inputMode="decimal" />
-            <div className="hstack" style={{ gap: 4, marginLeft: -8 }}>
+            <div className="hstack" style={{ gap: 'var(--sp-1)', marginLeft: 'calc(var(--sp-2) * -1)' }}>
               {['10.1.2.3', '172.31.0.5', '192.168.0.1', '169.254.10.20', '127.0.0.1', '8.8.8.8', '224.0.0.5', '100.64.1.1'].map((x) => (
                 <button key={x} className="tbtn mono small" onClick={() => setV4(x)}>{x}</button>
               ))}
@@ -87,25 +87,25 @@ export function Shorthand() {
     <div>
       <Task>Type any IPv6 address, full or shortened, to see every step and what kind of address it is.</Task>
       <input className={`input ${h ? '' : 'bad'}`} value={text} onChange={(e) => setText(e.target.value)} spellCheck={false} autoCapitalize="off" aria-label="IPv6 address" />
-      <div className="hstack" style={{ gap: 4, margin: '6px 0 0 -8px' }}>
+      <div className="hstack" style={{ gap: 'var(--sp-1)', margin: 'var(--sp-1h) 0 0 calc(var(--sp-2) * -1)' }}>
         {['fe80::1c2b:3ff:fe4a:91', '2001:db8:acad:10::1', 'fd12:3456:789a:1::25', 'ff02::1', '::1'].map((x) => (
           <button key={x} className="tbtn mono small" onClick={() => setText(x)}>{x}</button>
         ))}
       </div>
       {!h ? (
-        <p className="bad-text small" style={{ marginTop: 14 }}>Not valid IPv6. Look for two "::" or a group longer than 4 hex digits.</p>
+        <p className="bad-text small" style={{ marginTop: 'var(--sp-4)' }}>Not valid IPv6. Look for two "::" or a group longer than 4 hex digits.</p>
       ) : (
         <>
-          <div className="hextets" style={{ marginTop: 20 }}>
+          <div className="hextets" style={{ marginTop: 'var(--sp-5)' }}>
             {h.map((x, i) => (
               <span key={i} className={run.start !== -1 && i >= run.start && i < run.start + run.len ? 'z' : ''}>{x.toString(16).padStart(4, '0')}</span>
             ))}
           </div>
-          <div className="kv" style={{ marginTop: 18 }}>
+          <div className="kv" style={{ marginTop: 'var(--sp-5)' }}>
             <div>1 · Full</div><div>{expandIPv6(h)}</div>
             <div>2 · Drop leading zeros</div><div>{dropLeadingZeros(h)}</div>
             <div>3 · Collapse one zero run</div><div><b>{compressIPv6(h)}</b></div>
-            <div>Type</div><div>{type.name}{type.prefix && <span className="pill" style={{ marginLeft: 8 }}>{type.prefix}</span>}</div>
+            <div>Type</div><div>{type.name}{type.prefix && <span className="pill" style={{ marginLeft: 'var(--sp-2)' }}>{type.prefix}</span>}</div>
             {type.name.startsWith('Global') && (
               <>
                 <div>Routing prefix</div><div>{h.slice(0, 3).map((x) => x.toString(16)).join(':')}::/48</div>
@@ -161,11 +161,11 @@ export function CompressDrill() {
 
   return (
     <div>
-      <div className="spread" style={{ marginBottom: 8 }}>
+      <div className="spread" style={{ marginBottom: 'var(--sp-2)' }}>
         <Task>Write the shortest valid form of this address.</Task>
         <span className="tally"><b>{tally.ok}</b>/{tally.n}</span>
       </div>
-      <div className="mono" style={{ fontSize: 'clamp(15px, 3.4vw, 21px)', fontWeight: 600, wordBreak: 'break-all', marginBottom: 14 }}>{expandIPv6(h)}</div>
+      <div className="mono" style={{ fontSize: 'clamp(15px, 3.4vw, 21px)', fontWeight: 600, wordBreak: 'break-all', marginBottom: 'var(--sp-4)' }}>{expandIPv6(h)}</div>
       <form onSubmit={(e) => { e.preventDefault(); res ? next() : check(); }}>
         <input
           className={`input ${res === 'ok' ? 'good' : res ? 'bad' : ''}`}

@@ -28,7 +28,7 @@ export function BubbleGrid({ cells, current, onSelect }) {
   );
 }
 
-/** Side panel during a session: count, grid, legend, optional actions. */
+/** Right rail during a session: count, grid, legend, optional notes. */
 export function SessionSide({ title, stat, statLabel, cells, current, onSelect, legend, children }) {
   const [collapsed, setCollapsed] = useState(true);
   return (
@@ -36,17 +36,17 @@ export function SessionSide({ title, stat, statLabel, cells, current, onSelect, 
       <div className="side-sec">
         <div className="spread">
           <Eyebrow>{title}</Eyebrow>
-          <button className="tbtn side-toggle" style={{ margin: '-6px -8px' }} onClick={() => setCollapsed((c) => !c)} aria-expanded={!collapsed}>
+          <button className="tbtn side-toggle" style={{ marginRight: 'calc(var(--sp-2) * -1)' }} onClick={() => setCollapsed((c) => !c)} aria-expanded={!collapsed}>
             {collapsed ? 'Show grid' : 'Hide grid'}
           </button>
         </div>
-        <div className="hstack" style={{ marginTop: 8, alignItems: 'baseline' }}>
-          <span className="big" style={{ fontSize: 26 }}>{stat}</span>
+        <div className="hstack" style={{ marginTop: 'var(--sp-2)', alignItems: 'baseline' }}>
+          <span className="big sm">{stat}</span>
           <span className="muted small">{statLabel}</span>
         </div>
       </div>
       <div className="side-sec stack collapsible">
-        <div style={{ overflowX: 'auto', padding: 2 }}>
+        <div style={{ overflowX: 'auto', padding: 'var(--sp-0h)' }}>
           <BubbleGrid cells={cells} current={current} onSelect={onSelect} />
         </div>
         <div className="legend">

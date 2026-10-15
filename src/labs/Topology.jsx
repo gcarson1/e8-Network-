@@ -213,21 +213,21 @@ export function TopologySandbox() {
     <div>
       <Task>Click a device to fail it or a link to cut it, and watch how many devices can still talk. {topo.tip}</Task>
       <Seg label="Topology" value={key} onChange={change} options={Object.entries(TOPOLOGIES).map(([value, t]) => ({ value, label: t.label }))} />
-      <div className="spread" style={{ margin: '20px 0 6px' }}>
+      <div className="spread" style={{ margin: 'var(--sp-5) 0 var(--sp-1h)' }}>
         <span className="tally">
           <b className={pct === 100 ? 'good-text' : pct < 60 ? 'bad-text' : ''}>{pct}%</b> of device pairs connected · {topo.links.length} links
           {topo.formula && ` · n(n−1)/2 = ${nEnds}·${nEnds - 1}/2`}
         </span>
-        <button className="tbtn" onClick={() => { setDead(new Set()); setCut(new Set()); }} disabled={!dead.size && !cut.size} style={{ marginRight: -8 }}>Repair all</button>
+        <button className="tbtn" onClick={() => { setDead(new Set()); setCut(new Set()); }} disabled={!dead.size && !cut.size} style={{ marginRight: 'calc(var(--sp-2) * -1)' }}>Repair all</button>
       </div>
       <div className="diagram-scroll">
         <Diagram topo={topo} dead={dead} cut={cut} onNode={(id) => toggle(dead, setDead, id)} onLink={(i) => toggle(cut, setCut, i)} />
       </div>
       <PanHint />
-      <div className="grid-2" style={{ marginTop: 18 }}>
+      <div className="grid-2" style={{ marginTop: 'var(--sp-5)' }}>
         <div>
           <h3>{topo.label}</h3>
-          <p className="muted small" style={{ marginTop: 6 }}>{topo.about}</p>
+          <p className="muted small" style={{ marginTop: 'var(--sp-1h)' }}>{topo.about}</p>
         </div>
         <div className="small stack-sm">
           {topo.pros.map((p) => <p key={p}><span className="good-text">+</span> {p}</p>)}
@@ -248,7 +248,7 @@ export function TopologyIdentify() {
         {
           label: 'Diagram → name',
           items: IDENTIFY,
-          prompt: ({ t }) => <div style={{ maxWidth: 420 }}><Diagram topo={t} label="hide" /></div>,
+          prompt: ({ t }) => <div style={{ maxWidth: '26.25rem' }}><Diagram topo={t} label="hide" /></div>,
           answer: ({ t }) => t.label,
           note: ({ t }) => t.about,
         },

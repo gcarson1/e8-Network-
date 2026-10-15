@@ -19,9 +19,9 @@ export default function Labs({ view }) {
       <Page label={lab.title} wide>
         <button className="tbtn back" onClick={() => go('labs')}>← Labs</button>
         <Eyebrow>{domainFor(lab.domain)?.short || lab.domain}</Eyebrow>
-        <h1 style={{ marginTop: 6 }}>{lab.title}</h1>
+        <h1 style={{ marginTop: 'var(--sp-1h)' }}>{lab.title}</h1>
         {lab.activities.length > 1 ? (
-          <div className="utabs" role="tablist" style={{ marginTop: 16 }}>
+          <div className="utabs" role="tablist" style={{ marginTop: 'var(--sp-4)' }}>
             {lab.activities.map((x) => (
               <button key={x.id} role="tab" className="utab" aria-selected={x.id === cur.id} onClick={() => setAct(x.id)}>
                 {x.label}
@@ -29,7 +29,7 @@ export default function Labs({ view }) {
             ))}
           </div>
         ) : (
-          <div style={{ height: 22 }} />
+          <div style={{ height: '1.375rem' }} />
         )}
         <div key={cur.id}>
           <Component />
@@ -49,9 +49,9 @@ export default function Labs({ view }) {
         const labs = LABS.filter((l) => l.domain === d);
         if (!labs.length) return null;
         return (
-          <section key={d} style={{ marginBottom: 26 }}>
+          <section key={d} style={{ marginBottom: 'var(--sp-7)' }}>
             <Eyebrow n={labs.length}>{domainFor(d)?.short || d}</Eyebrow>
-            <div className="rows" style={{ marginTop: 8 }}>
+            <div className="rows" style={{ marginTop: 'var(--sp-2)' }}>
               {labs.map((l) => (
                 <button key={l.id} className="rowbtn" onClick={() => go({ name: 'labs', lab: l.id })}>
                   <span>

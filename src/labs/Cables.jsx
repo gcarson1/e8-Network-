@@ -142,7 +142,7 @@ const STANDARDS = [
 ];
 
 const Pic = ({ name, size = 150 }) => (
-  <svg viewBox="0 0 120 90" width={size} height={(size * 90) / 120} role="img" aria-label="Connector drawing" style={{ color: 'var(--text)', display: 'block' }}>
+  <svg viewBox="0 0 120 90" role="img" aria-label="Connector drawing" style={{ width: `${size / 16}rem`, height: `${(size * 90) / 120 / 16}rem`, color: 'var(--text)', display: 'block' }}>
     {DRAW[name]}
   </svg>
 );
@@ -151,7 +151,7 @@ export function Connectors() {
   const [quiz, setQuiz] = useState(false);
   return (
     <div>
-      <div className="spread" style={{ marginBottom: 18 }}>
+      <div className="spread" style={{ marginBottom: 'var(--sp-5)' }}>
         <Seg label="Mode" value={quiz} onChange={setQuiz} options={[{ value: false, label: 'Learn' }, { value: true, label: 'Quiz me' }]} />
       </div>
       {quiz ? (
@@ -169,13 +169,13 @@ export function Connectors() {
               <div key={c.name} className="conn">
                 <Pic name={c.name} size={84} />
                 <div>
-                  <div className="hstack" style={{ gap: 8 }}><b>{c.name}</b><span className="pill">{c.medium}</span></div>
-                  <p className="muted small" style={{ marginTop: 3 }}>{c.use}</p>
+                  <div className="hstack" style={{ gap: 'var(--sp-2)' }}><b>{c.name}</b><span className="pill">{c.medium}</span></div>
+                  <p className="muted small" style={{ marginTop: 'var(--sp-1)' }}>{c.use}</p>
                 </div>
               </div>
             ))}
           </div>
-          <p className="faint small" style={{ marginTop: 10 }}>Simplified front views, not to scale.</p>
+          <p className="faint small" style={{ marginTop: 'var(--sp-3)' }}>Simplified front views, not to scale.</p>
         </>
       )}
     </div>
@@ -220,7 +220,7 @@ function Wire({ name, w = 26, h = 54 }) {
   const striped = name.startsWith('White');
   const id = `stripe-${name.replace('/', '')}`;
   return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true" style={{ display: 'block' }}>
+    <svg viewBox={`0 0 ${w} ${h}`} aria-hidden="true" style={{ width: `${w / 16}rem`, height: `${h / 16}rem`, display: 'block' }}>
       {striped && (
         <defs>
           <pattern id={id} width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
@@ -261,15 +261,15 @@ export function WireRj45() {
 
   return (
     <div>
-      <div className="spread" style={{ marginBottom: 8 }}>
+      <div className="spread" style={{ marginBottom: 'var(--sp-2)' }}>
         <span className="eyebrow">Task {t + 1} of {TASKS.length}</span>
-        <div className="hstack" style={{ gap: 2, marginRight: -8 }}>
+        <div className="hstack" style={{ gap: 'var(--sp-0h)', marginRight: 'calc(var(--sp-2) * -1)' }}>
           {TASKS.map((_, i) => (
             <button key={i} className={`tbtn ${i === t ? 'on' : ''}`} onClick={() => reset(i)}>{i + 1}</button>
           ))}
         </div>
       </div>
-      <p className="qstem" style={{ marginBottom: 6 }}>{task.title}</p>
+      <p className="qstem" style={{ marginBottom: 'var(--sp-1h)' }}>{task.title}</p>
       <Task>Tap wires in order for pins 1 → 8 (clip facing down, pin 1 on the left). Tap a pin to clear it.</Task>
 
       <div className="plug" role="group" aria-label="RJ45 pins">
@@ -287,7 +287,7 @@ export function WireRj45() {
       </div>
 
       {remaining.length > 0 && !checked && (
-        <div className="pool" style={{ marginTop: 16 }}>
+        <div className="pool" style={{ marginTop: 'var(--sp-4)' }}>
           {remaining.map((w) => (
             <button key={w} className="chipbtn wirebtn" onClick={() => place(w)}>
               <Wire name={w} w={14} h={22} />

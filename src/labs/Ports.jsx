@@ -81,11 +81,11 @@ export function FirewallRules() {
 
   return (
     <div>
-      <div className="spread" style={{ marginBottom: 8 }}>
+      <div className="spread" style={{ marginBottom: 'var(--sp-2)' }}>
         <span className="eyebrow">Rule set {(i % order.length) + 1} of {order.length}</span>
         <span className="tally"><b>{tally.ok}</b>/{tally.n} exact</span>
       </div>
-      <p className="qstem" style={{ marginBottom: 6 }}>{sc.ask}</p>
+      <p className="qstem" style={{ marginBottom: 'var(--sp-1h)' }}>{sc.ask}</p>
       <Task>Allow only the ports it needs. Everything else stays blocked (implicit deny).</Task>
       <div className="tiles">
         {PORTS.map((p) => {

@@ -105,9 +105,9 @@ export default function Routing() {
           </div>
         ))}
       </div>
-      <p className="faint small" style={{ marginTop: 6 }}>{done}/{missions.length} done{done < missions.length ? ' · hint for the bonus: 192.168.2.0 and 192.168.3.0 share their first 23 bits' : ''}</p>
+      <p className="faint small" style={{ marginTop: 'var(--sp-1h)' }}>{done}/{missions.length} done{done < missions.length ? ' · hint for the bonus: 192.168.2.0 and 192.168.3.0 share their first 23 bits' : ''}</p>
 
-      <div className="diagram-scroll" style={{ marginTop: 18 }}>
+      <div className="diagram-scroll" style={{ marginTop: 'var(--sp-5)' }}>
         <svg className="diagram" viewBox="0 0 640 240" role="img" aria-label="LAN A, R1, R2 with LAN B and C, and the ISP">
           <L id="A-R1" x1={75} y1={125} x2={250} y2={125} />
           <L id="R1-R2" x1={250} y1={125} x2={430} y2={55} />
@@ -129,7 +129,7 @@ export default function Routing() {
       </div>
       <PanHint />
 
-      <div className="eyebrow" style={{ margin: '24px 0 8px' }}>R1 routing table</div>
+      <div className="eyebrow" style={{ margin: 'var(--sp-6) 0 var(--sp-2)' }}>R1 routing table</div>
       <div className="scroll-x">
         <table className="table">
           <thead><tr><th>Code</th><th>Destination</th><th>Via</th><th>AD</th><th /></tr></thead>
@@ -155,7 +155,7 @@ export default function Routing() {
         </table>
       </div>
 
-      <form onSubmit={add} className="grid-fields" style={{ marginTop: 16, alignItems: 'end' }}>
+      <form onSubmit={add} className="grid-fields" style={{ marginTop: 'var(--sp-4)', alignItems: 'end' }}>
         <label className="lf"><span>Destination network</span><input className="input" value={form.net} onChange={(e) => setForm({ ...form, net: e.target.value })} placeholder="192.168.2.0" inputMode="decimal" spellCheck={false} /></label>
         <label className="lf"><span>Prefix or mask</span><input className="input" value={form.prefix} onChange={(e) => setForm({ ...form, prefix: e.target.value })} placeholder="/24" spellCheck={false} /></label>
         <label className="lf"><span>Next hop</span>
@@ -165,14 +165,14 @@ export default function Routing() {
         </label>
         <div><button className="btn primary" type="submit">Add route</button></div>
       </form>
-      {err && <p className="bad-text small" style={{ marginTop: 8 }}>{err}</p>}
-      <p className="faint small mono" style={{ marginTop: 8 }}>
+      {err && <p className="bad-text small" style={{ marginTop: 'var(--sp-2)' }}>{err}</p>}
+      <p className="faint small mono" style={{ marginTop: 'var(--sp-2)' }}>
         ip route {form.net || '<network>'} {parseCidrOrMask(form.prefix) != null ? intToIp(prefixToMask(parseCidrOrMask(form.prefix))) : '<mask>'} {form.via}
       </p>
 
-      <div className="eyebrow" style={{ margin: '26px 0 8px' }}>Send a test packet</div>
+      <div className="eyebrow" style={{ margin: 'var(--sp-7) 0 var(--sp-2)' }}>Send a test packet</div>
       <div className="hstack">
-        <input className={`input ${result ? '' : 'bad'}`} style={{ maxWidth: 200 }} value={dest} onChange={(e) => setDest(e.target.value)} aria-label="Destination IP" inputMode="decimal" spellCheck={false} />
+        <input className={`input ${result ? '' : 'bad'}`} style={{ maxWidth: '12.5rem' }} value={dest} onChange={(e) => setDest(e.target.value)} aria-label="Destination IP" inputMode="decimal" spellCheck={false} />
         <div className="toggles">
           {QUICK.map(([l, ip]) => <button key={ip} className="toggle" aria-pressed={dest === ip} onClick={() => setDest(ip)}>{l}</button>)}
         </div>

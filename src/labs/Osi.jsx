@@ -23,8 +23,8 @@ export function OsiOrder() {
         task="Tap the layers from the top of the stack (Layer 7) down to Layer 1."
         success='Top down: "All People Seem To Need Data Processing." Bottom up: "Please Do Not Throw Sausage Pizza Away."'
       />
-      <div style={{ marginTop: 30 }}>
-        <div className="eyebrow" style={{ marginBottom: 8 }}>Reference</div>
+      <div style={{ marginTop: 'var(--sp-8)' }}>
+        <div className="eyebrow" style={{ marginBottom: 'var(--sp-2)' }}>Reference</div>
         <div className="scroll-x">
           <table className="table">
             <thead><tr><th>#</th><th>Layer</th><th>Job</th><th>PDU</th></tr></thead>
@@ -89,7 +89,7 @@ export function OsiSort() {
     <div>
       <Task>Pick an item, then tap its layer (or press 1–7). The next item is selected for you.</Task>
       {!done ? (
-        <div className="pool" style={{ marginBottom: 18 }}>
+        <div className="pool" style={{ marginBottom: 'var(--sp-5)' }}>
           {pool.map((it) => (
             <button key={it[0]} className="chipbtn" aria-pressed={armed?.[0] === it[0]} onClick={() => setArmed(armed?.[0] === it[0] ? null : it)}>
               {it[0]}
@@ -97,7 +97,7 @@ export function OsiSort() {
           ))}
         </div>
       ) : (
-        <div className="follow good" style={{ marginTop: 0, marginBottom: 18 }}>
+        <div className="follow good" style={{ marginTop: '0', marginBottom: 'var(--sp-5)' }}>
           <div className="follow-k">All {ROUND} placed</div>
           <p className="rest">{mistakes === 0 ? 'No mistakes.' : `${mistakes} wrong tap${mistakes === 1 ? '' : 's'} along the way.`}</p>
         </div>
@@ -119,7 +119,7 @@ export function OsiSort() {
             >
               <span className="n">L{n}</span>
               <b>{name}</b>
-              <span className="hstack" style={{ gap: 6, padding: '6px 0' }}>
+              <span className="hstack" style={{ gap: 'var(--sp-1h)', padding: 'var(--sp-1h) 0' }}>
                 {here.map(([t]) => <span key={t} className="pill good">{t}</span>)}
               </span>
             </div>
@@ -182,7 +182,7 @@ export function Encapsulation() {
   const rowH = 56;
   return (
     <div>
-      <div className="spread" style={{ marginBottom: 16 }}>
+      <div className="spread" style={{ marginBottom: 'var(--sp-4)' }}>
         <Seg label="Direction" value={dir} onChange={reset} options={[
           { value: 'send', label: 'Sender: encapsulate' },
           { value: 'receive', label: 'Receiver: decapsulate' },
@@ -226,9 +226,9 @@ export function Encapsulation() {
       <PanHint />
 
       {askPdu ? (
-        <div style={{ marginTop: 18 }}>
-          <p className="qstem" style={{ fontSize: 17 }}>At {nextRow.layer} {nextRow.name}, what is the PDU called?</p>
-          <div className="opts two" style={{ marginTop: 12 }}>
+        <div style={{ marginTop: 'var(--sp-5)' }}>
+          <p className="qstem" style={{ fontSize: 'var(--fs-18)' }}>At {nextRow.layer} {nextRow.name}, what is the PDU called?</p>
+          <div className="opts two" style={{ marginTop: 'var(--sp-3)' }}>
             {PDUS.map((p, i) => (
               <button key={p} className="opt" onClick={() => answer(p)}>
                 <span className="opt-k">{i + 1}</span><span className="opt-l">{p}</span>

@@ -112,7 +112,7 @@ const DEVICES = [
 ];
 
 const Icon = ({ name, size = 54 }) => (
-  <svg viewBox="0 0 64 64" width={size} height={size} aria-hidden="true" style={{ color: 'var(--text)', flex: 'none' }}>
+  <svg viewBox="0 0 64 64" aria-hidden="true" style={{ width: `${size / 16}rem`, height: `${size / 16}rem`, color: 'var(--text)', flex: 'none' }}>
     {ICON[name]}
   </svg>
 );
@@ -127,7 +127,7 @@ export function DevicesReference() {
         <tbody>
           {DEVICES.map((d) => (
             <tr key={d.name}>
-              <td style={{ width: 48 }}><Icon name={d.name} size={34} /></td>
+              <td style={{ width: '3rem' }}><Icon name={d.name} size={34} /></td>
               <td><b>{d.name}</b></td>
               <td className="mono">{d.layer}</td>
               <td className="muted">{d.fn}</td>
@@ -146,7 +146,7 @@ export const DevicesDrill = () => (
       {
         label: 'Device → job',
         items: DEVICES,
-        prompt: (d) => <span className="hstack" style={{ gap: 16 }}><Icon name={d.name} />{d.name}</span>,
+        prompt: (d) => <span className="hstack" style={{ gap: 'var(--sp-4)' }}><Icon name={d.name} />{d.name}</span>,
         answer: (d) => d.fn,
         note: (d) => `${d.name} · ${d.layer}`,
       },
@@ -154,7 +154,7 @@ export const DevicesDrill = () => (
       {
         label: 'Device → layer',
         items: withLayer,
-        prompt: (d) => <span className="hstack" style={{ gap: 16 }}><Icon name={d.name} />{d.name}</span>,
+        prompt: (d) => <span className="hstack" style={{ gap: 'var(--sp-4)' }}><Icon name={d.name} />{d.name}</span>,
         answer: (d) => d.layer,
         note: (d) => d.fn,
       },
@@ -250,13 +250,13 @@ export function BuildNetwork() {
 
   return (
     <div>
-      <div className="spread" style={{ marginBottom: 6, alignItems: 'baseline' }}>
+      <div className="spread" style={{ marginBottom: 'var(--sp-1h)', alignItems: 'baseline' }}>
         <Task>Pick a device, then tap the slot where it belongs. Three devices are decoys.</Task>
-        <button className={`tbtn ${hints ? 'on' : ''}`} onClick={() => setHints((h) => !h)} aria-pressed={hints} style={{ marginRight: -8 }}>
+        <button className={`tbtn ${hints ? 'on' : ''}`} onClick={() => setHints((h) => !h)} aria-pressed={hints} style={{ marginRight: 'calc(var(--sp-2) * -1)' }}>
           {hints ? 'Hints on' : 'Hints off'}
         </button>
       </div>
-      <div className="pool" style={{ marginBottom: 14 }}>
+      <div className="pool" style={{ marginBottom: 'var(--sp-4)' }}>
         {palette.map((d) => (
           <button key={d} className={`chipbtn wirebtn ${used.has(d) ? 'placed' : ''}`} aria-pressed={armed === d} onClick={() => !checked && setArmed(armed === d ? null : d)}>
             <Icon name={d} size={20} />

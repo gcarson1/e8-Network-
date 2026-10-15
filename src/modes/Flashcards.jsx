@@ -149,16 +149,16 @@ export default function Flashcards() {
           <div className="stat"><div className="v good-text">{got}</div><div className="k">Got it</div></div>
           <div className="stat"><div className="v bad-text">{learning.length}</div><div className="k">Still learning</div></div>
         </div>
-        <div className="form-foot" style={{ margin: '22px 0 28px' }}>
+        <div className="form-foot" style={{ margin: 'var(--sp-6) 0 var(--sp-7)' }}>
           {learning.length > 0 && <button className="btn primary" onClick={() => begin(shuffle(learning))}>Go again with the {learning.length} still learning</button>}
           <button className={learning.length ? 'tbtn' : 'btn primary'} onClick={() => setS(null)}>New deck</button>
         </div>
         {learning.length > 0 && (
           <section className="sec">
             <Eyebrow>Still learning</Eyebrow>
-            <div className="rows" style={{ marginTop: 12 }}>
+            <div className="rows" style={{ marginTop: 'var(--sp-3)' }}>
               {learning.map((c) => (
-                <div key={c.id} className="small" style={{ padding: '10px 4px', borderBottom: '1px solid var(--line)' }}>
+                <div key={c.id} className="small" style={{ padding: 'var(--sp-3) var(--sp-1)', borderBottom: '1px solid var(--line)' }}>
                   {c.kind === 't' ? <b>{c.t.term}</b> : <span className="clamp">{c.q.question}</span>}
                 </div>
               ))}
@@ -196,29 +196,31 @@ export default function Flashcards() {
         />
       }
     >
-      <div className="spread qmeta">
-        <Eyebrow n={`of ${s.cards.length}`}>Card {s.idx + 1}</Eyebrow>
-        <span className="faint small">{domainFor(card.category)?.short || card.category}</span>
-      </div>
-      <div
-        className={`card ${s.flipped ? 'back' : ''}`}
-        role="button"
-        tabIndex={0}
-        onClick={flip}
-        aria-label={s.flipped ? 'Answer side. Activate to see the question.' : 'Question side. Activate to flip.'}
-      >
-        <CardFace card={card} flipped={s.flipped} key={`${card.id}-${s.flipped}`} />
-      </div>
-      {s.flipped ? (
-        <div className="rate">
-          <button className="btn" onClick={() => rate(false)}>Still learning <span className="k hide-sm">1</span></button>
-          <button className="btn primary" onClick={() => rate(true)}>Got it <span className="k hide-sm">2</span></button>
+      <div className="measure">
+        <div className="spread qmeta">
+          <Eyebrow n={`of ${s.cards.length}`}>Card {s.idx + 1}</Eyebrow>
+          <span className="faint small">{domainFor(card.category)?.short || card.category}</span>
         </div>
-      ) : (
-        <div className="rate" style={{ gridTemplateColumns: '1fr' }}>
-          <button className="btn primary" onClick={flip}>Show answer <span className="k hide-sm">Space</span></button>
+        <div
+          className={`card ${s.flipped ? 'back' : ''}`}
+          role="button"
+          tabIndex={0}
+          onClick={flip}
+          aria-label={s.flipped ? 'Answer side. Activate to see the question.' : 'Question side. Activate to flip.'}
+        >
+          <CardFace card={card} flipped={s.flipped} key={`${card.id}-${s.flipped}`} />
         </div>
-      )}
+        {s.flipped ? (
+          <div className="rate">
+            <button className="btn" onClick={() => rate(false)}>Still learning <span className="k hide-sm">1</span></button>
+            <button className="btn primary" onClick={() => rate(true)}>Got it <span className="k hide-sm">2</span></button>
+          </div>
+        ) : (
+          <div className="rate one">
+            <button className="btn primary" onClick={flip}>Show answer <span className="k hide-sm">Space</span></button>
+          </div>
+        )}
+      </div>
     </Page>
   );
 }

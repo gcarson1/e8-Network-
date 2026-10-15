@@ -70,7 +70,7 @@ export function ReviewList({ graded }) {
 
   return (
     <>
-      <div className="spread" style={{ marginBottom: 12 }}>
+      <div className="spread" style={{ marginBottom: 'var(--sp-3)' }}>
         <Eyebrow>Review</Eyebrow>
         <Seg
           label="Review filter"
@@ -84,7 +84,7 @@ export function ReviewList({ graded }) {
         />
       </div>
       <div className="rows">
-        {list.length === 0 && <p className="muted" style={{ padding: '14px 4px' }}>Nothing missed.</p>}
+        {list.length === 0 && <p className="muted" style={{ padding: 'var(--sp-4) var(--sp-1)' }}>Nothing missed.</p>}
         {list.map((g) => (
           <div className="rv" key={g.q.id} id={`rv-${g.i}`}>
             <button onClick={() => setOpen((o) => ({ ...o, [g.i]: !o[g.i] }))} aria-expanded={!!open[g.i]}>

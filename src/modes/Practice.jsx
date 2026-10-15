@@ -62,6 +62,8 @@ export default function Practice({ view }) {
       begin(shuffle(questions.filter((q) => set.has(q.id))));
     } else if (preset.quick) {
       begin(shuffle(questions).slice(0, 20));
+    } else if (preset.unseen) {
+      begin(shuffle(questions.filter((q) => !items[q.id])).slice(0, 20));
     } else if (preset.categories) {
       begin(weakestFirst(questions.filter((q) => preset.categories.includes(q.category)), items, stats).slice(0, 20));
     }
@@ -145,7 +147,7 @@ export default function Practice({ view }) {
             selected={cats}
             onToggle={(c) => setCats((cur) => (cur.includes(c) ? cur.filter((x) => x !== c) : [...cur, c]))}
           />
-          <div className="hstack" style={{ marginLeft: -8 }}>
+          <div className="hstack" style={{ marginLeft: 'calc(var(--sp-2) * -1)' }}>
             <button className="tbtn" onClick={() => setCats(categories)}>All</button>
             <button className="tbtn" onClick={() => setCats([])}>None</button>
           </div>
@@ -185,7 +187,7 @@ export default function Practice({ view }) {
         ) : (
           <p className="muted">No answers checked.</p>
         )}
-        <div className="form-foot" style={{ margin: '22px 0 28px' }}>
+        <div className="form-foot" style={{ margin: 'var(--sp-6) 0 var(--sp-7)' }}>
           {missedIds.length > 0 && (
             <button className="btn primary" onClick={() => begin(shuffle(questions.filter((x) => missedIds.includes(x.id))))}>
               Retry the {missedIds.length} missed
@@ -197,7 +199,7 @@ export default function Practice({ view }) {
           <>
             <section className="sec">
               <Eyebrow>By domain</Eyebrow>
-              <div style={{ marginTop: 12 }}><Breakdown graded={graded} /></div>
+              <div style={{ marginTop: 'var(--sp-3)' }}><Breakdown graded={graded} /></div>
             </section>
             <section className="sec">
               <ReviewList graded={graded} />
@@ -223,7 +225,7 @@ export default function Practice({ view }) {
           right={
             <>
               <span className="mono faint small hide-sm" aria-label="Elapsed time">{fmtClock((now - s.startedAt) / 1000)}</span>
-              <button className="btn" style={{ marginLeft: 10 }} onClick={finish}>Finish</button>
+              <button className="btn" style={{ marginLeft: 'var(--sp-3)' }} onClick={finish}>Finish</button>
             </>
           }
         />
@@ -262,7 +264,7 @@ export default function Practice({ view }) {
             <button className="btn primary" onClick={check} disabled={!canCheck}>Check</button>
             <span className="hint hide-sm">{q.multi ? `Pick ${q.correct.length}` : 'Enter also checks'}</span>
             <span className="spacer" />
-            <button className="tbtn" onClick={next} style={{ marginRight: -8 }}>Skip</button>
+            <button className="tbtn" onClick={next} style={{ marginRight: 'calc(var(--sp-2) * -1)' }}>Skip</button>
           </>
         ) : (
           <button className="btn primary" onClick={next}>{s.idx === s.qs.length - 1 ? 'See results' : 'Next →'}</button>

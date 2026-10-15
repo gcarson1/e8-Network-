@@ -73,7 +73,7 @@ export default function DataDialog() {
       <div className="modal-sec stack">
         <Eyebrow>Save</Eyebrow>
         <p className="small">
-          {count ? `${count} items · ${overall.pct}% mastery` : 'Nothing to save yet.'}
+          {count ? `${count} items · ${overall.readiness}% exam readiness` : 'Nothing to save yet.'}
           {dirty && <span className="muted"> · unsaved changes</span>}
         </p>
         <div className="hstack">

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import bankCsv from '../network_plus_question_bank.csv?raw';
-import { loadBankFromCSV } from './lib/bank.js';
+import { domainFor, loadBankFromCSV } from './lib/bank.js';
 import { TERMS } from './data/terms.js';
 import { categoryStats, overallStats, record } from './lib/mastery.js';
 import { loadBackup, saveBackup } from './lib/progress.js';
@@ -22,7 +22,7 @@ export function StudyProvider({ children }) {
 
   const terms = useMemo(() => TERMS.filter((t) => BANK.categories.includes(t.category)), []);
   const stats = useMemo(() => categoryStats(BANK.categories, BANK.questions, terms, items), [items, terms]);
-  const overall = useMemo(() => overallStats(stats), [stats]);
+  const overall = useMemo(() => overallStats(stats, (c) => domainFor(c)?.weight), [stats]);
 
   const notify = useCallback((msg) => {
     setToast(msg);

@@ -33,7 +33,7 @@ export function SubnetRuler({ ip, prefix }) {
   const blocks = Array.from({ length: 256 / block }, (_, i) => i * block);
   const labelEvery = blocks.length > 16 ? Math.ceil(blocks.length / 8) : 1;
   return (
-    <figure style={{ margin: 0 }}>
+    <figure style={{ margin: '0' }}>
       <svg className="diagram" viewBox={`0 0 ${W} 82`} role="img" aria-label={`Octet ${octet + 1} split into blocks of ${block}; ${val} is in ${start}–${start + block - 1}`}>
         {blocks.map((b, i) => (
           <rect key={b} x={x(b)} y={30} width={x(b + block) - x(b) - (block >= 8 ? 1.5 : 0.5)} height={20}
@@ -47,7 +47,7 @@ export function SubnetRuler({ ip, prefix }) {
         <line x1={x(val + 0.5)} y1={14} x2={x(val + 0.5)} y2={52} className="wire" strokeWidth="1.5" />
         <text x={x(val + 0.5)} y={11} textAnchor="middle" className="mono" style={{ fontSize: 11, fontWeight: 700 }}>{val}</text>
       </svg>
-      <figcaption className="small muted" style={{ marginTop: 4 }}>
+      <figcaption className="small muted" style={{ marginTop: 'var(--sp-1)' }}>
         Octet {octet + 1}, blocks of {block}. {val} sits in {start}–{start + block - 1}.
       </figcaption>
     </figure>
@@ -61,7 +61,7 @@ function HowItWorks({ ip, prefix }) {
   const maskOctet = (info.mask >>> (24 - octet * 8)) & 255;
   const ord = ['1st', '2nd', '3rd', '4th'][octet];
   return (
-    <div className="stack-lg" style={{ marginTop: 26 }}>
+    <div className="stack-lg" style={{ marginTop: 'var(--sp-7)' }}>
       <SubnetRuler ip={ip} prefix={prefix} />
       <div className="scroll-x">
         {[
@@ -160,7 +160,7 @@ export function SubnetCalc() {
 
   return (
     <div>
-      <div className="spread" style={{ marginBottom: 22 }}>
+      <div className="spread" style={{ marginBottom: 'var(--sp-6)' }}>
         <Seg label="Difficulty" value={level} onChange={(v) => { setLevel(v); next(v); }} options={[
           { value: 'easy', label: '/24–/30' },
           { value: 'medium', label: '/16–/30' },
@@ -169,7 +169,7 @@ export function SubnetCalc() {
         <span className="tally"><b>{tally.solved}</b>/{tally.tried} solved</span>
       </div>
       <Task>Fill in every field for this address. Tab moves along; Enter checks.</Task>
-      <div className="drill-q mono" style={{ marginBottom: 18 }}>
+      <div className="drill-q mono" style={{ marginBottom: 'var(--sp-5)' }}>
         {intToIp(p.ip)}
         <span className="faint">{p.useMask ? ` ${intToIp(prefixToMask(p.prefix))}` : `/${p.prefix}`}</span>
       </div>
@@ -229,11 +229,11 @@ export function CidrVisual() {
         <span className="drill-q mono">/{prefix}</span>
         <span className="mono muted">{intToIp(mask)}</span>
       </div>
-      <input type="range" className="range" min={0} max={32} value={prefix} onChange={(e) => setPrefix(Number(e.target.value))} aria-label="Prefix length" style={{ margin: '10px 0' }} />
+      <input type="range" className="range" min={0} max={32} value={prefix} onChange={(e) => setPrefix(Number(e.target.value))} aria-label="Prefix length" style={{ margin: 'var(--sp-3) 0' }} />
       <div className="scroll-x">
         <div className="bitrow"><span className="lbl">Mask</span><Bits value={mask} prefix={prefix} /><span className="dec">{prefix} network · {32 - prefix} host bits</span></div>
       </div>
-      <div className="grid-2" style={{ marginTop: 24 }}>
+      <div className="grid-2" style={{ marginTop: 'var(--sp-6)' }}>
         <div className="kv">
           <div>Mask</div><div>{intToIp(mask)}</div>
           <div>Wildcard</div><div>{intToIp(info.wildcard)}</div>
@@ -255,9 +255,9 @@ export function CidrVisual() {
           )}
         </div>
       </div>
-      {ip != null && <div style={{ marginTop: 22 }}><SubnetRuler ip={ip} prefix={prefix} /></div>}
-      <div style={{ marginTop: 26 }}>
-        <div className="eyebrow" style={{ marginBottom: 8 }}>Cheat sheet</div>
+      {ip != null && <div style={{ marginTop: 'var(--sp-6)' }}><SubnetRuler ip={ip} prefix={prefix} /></div>}
+      <div style={{ marginTop: 'var(--sp-7)' }}>
+        <div className="eyebrow" style={{ marginBottom: 'var(--sp-2)' }}>Cheat sheet</div>
         <div className="scroll-x">
           <table className="table">
             <thead><tr><th>Prefix</th><th>Mask</th><th>Block</th><th>Hosts</th></tr></thead>
@@ -367,7 +367,7 @@ export function Vlsm() {
         })}
       </div>
 
-      <svg className="diagram" viewBox={`0 0 ${W} 70`} style={{ marginTop: 18 }} role="img" aria-label="Address space usage">
+      <svg className="diagram" viewBox={`0 0 ${W} 70`} style={{ marginTop: 'var(--sp-5)' }} role="img" aria-label="Address space usage">
         <rect x={x(0)} y={14} width={x(256) - x(0)} height={26} style={{ fill: 'var(--track)' }} />
         {order.map((r) => {
           const a = alloc[r.id];
@@ -387,13 +387,13 @@ export function Vlsm() {
         {overflow && <rect x={x(0)} y={14} width={x(256) - x(0)} height={26} style={{ fill: 'none', stroke: 'var(--bad)', strokeWidth: 2 }} />}
         <text x={x(256)} y={56} textAnchor="end" className="mono faint" style={{ fontSize: 10 }}>.255</text>
       </svg>
-      <div className="legend" style={{ marginTop: 4 }}>
+      <div className="legend" style={{ marginTop: 'var(--sp-1)' }}>
         <span><i className="ink" />Hosts needed</span>
         <span><i style={{ background: 'var(--s3)' }} />Spare in the block</span>
         <span><i />Unallocated</span>
       </div>
 
-      {overflow && <p className="bad-text small" style={{ marginTop: 12 }}>Those blocks need {cursor} addresses, more than the /24's 256.</p>}
+      {overflow && <p className="bad-text small" style={{ marginTop: 'var(--sp-3)' }}>Those blocks need {cursor} addresses, more than the /24's 256.</p>}
       {checked && (
         <div className={`follow ${allOk ? 'good' : 'bad'}`}>
           <div className="follow-k">{allOk ? 'Efficient plan' : 'Not quite'}</div>

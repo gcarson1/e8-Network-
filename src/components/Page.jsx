@@ -12,23 +12,19 @@ const NAV = [
   ['labs', 'Labs'],
 ];
 
-function ProgressButton() {
-  const { openData } = useNav();
+function BarActions() {
+  const { openData, theme, toggleTheme } = useNav();
   const { dirty } = useStudy();
   return (
-    <button className={`tbtn ${dirty ? 'strong' : ''}`} onClick={openData} title={dirty ? 'You have unsaved progress' : 'Save or load your progress file'}>
-      {dirty && <span className="unsaved" aria-hidden="true" />}
-      {dirty ? 'Save progress' : 'Progress file'}
-    </button>
-  );
-}
-
-function ThemeButton() {
-  const { theme, toggleTheme } = useNav();
-  return (
-    <button className="tbtn" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
-      <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
-    </button>
+    <div className="bar-r">
+      <button className={`tbtn ${dirty ? 'strong' : ''}`} onClick={openData} title={dirty ? 'You have unsaved progress' : 'Save or load your progress file'}>
+        {dirty ? <span className="unsaved" aria-hidden="true" /> : <Icon name="save" />}
+        {dirty ? 'Save progress' : 'Progress file'}
+      </button>
+      <button className="tbtn" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} title="Light / dark">
+        <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
+      </button>
+    </div>
   );
 }
 
@@ -37,17 +33,17 @@ function NavBar() {
   const current = NAV.find(([n]) => n === view.name)?.[1];
   return (
     <header className="bar">
-      <nav className="bar-nav" aria-label="Main">
-        {NAV.map(([name, label]) => (
-          <button key={name} aria-current={view.name === name ? 'page' : undefined} onClick={() => go(name)}>
-            {label}
-          </button>
-        ))}
-      </nav>
-      <span className="bar-mtitle">{current}</span>
-      <div className="bar-r">
-        <ProgressButton />
-        <ThemeButton />
+      <div className="bar-in">
+        <nav className="bar-nav" aria-label="Main">
+          {NAV.map(([name, label]) => (
+            <button key={name} aria-current={view.name === name ? 'page' : undefined} onClick={() => go(name)}>
+              <Icon name={name} />
+              {label}
+            </button>
+          ))}
+        </nav>
+        <span className="bar-mtitle">{current}</span>
+        <BarActions />
       </div>
     </header>
   );
@@ -59,6 +55,7 @@ function MobileNav() {
     <nav className="mnav" aria-label="Main">
       {NAV.map(([name, label]) => (
         <button key={name} aria-current={view.name === name ? 'page' : undefined} onClick={() => go(name)}>
+          <Icon name={name} />
           {label === 'Flashcards' ? 'Cards' : label}
         </button>
       ))}
@@ -74,23 +71,25 @@ export function SessionBar({ title, meta = [], onExit, exitLabel = 'Exit', right
   }, []);
   return (
     <header className="bar">
-      <button className="tbtn" onClick={onExit} style={{ marginLeft: -8 }}>
-        ← {exitLabel}
-      </button>
-      <span className="bar-title">{title}</span>
-      {meta.filter(Boolean).map((m, i) => (
-        <span key={i} className={`bar-meta ${i > 0 ? 'opt-sm' : ''}`}>
-          {m}
-        </span>
-      ))}
-      <div className="bar-r">{right}</div>
+      <div className="bar-in">
+        <button className="tbtn" onClick={onExit} style={{ marginLeft: 'calc(var(--sp-2) * -1)' }}>
+          ← {exitLabel}
+        </button>
+        <span className="bar-title">{title}</span>
+        {meta.filter(Boolean).map((m, i) => (
+          <span key={i} className={`bar-meta ${i > 0 ? 'opt-sm' : ''}`}>
+            {m}
+          </span>
+        ))}
+        <div className="bar-r">{right}</div>
+      </div>
     </header>
   );
 }
 
 /**
- * Page layout: top bar, main column, side panel (mastery by default).
- * Pass `bar` to replace the nav bar with a session bar.
+ * Page layout: top bar, main column, right rail (mastery by default).
+ * Pass `bar` to swap the nav bar for a session bar.
  */
 export default function Page({ bar, side, wide, label, children }) {
   return (

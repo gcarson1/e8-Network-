@@ -48,13 +48,13 @@ export function MatchDrill({ modes, task }) {
   return (
     <div>
       {task && <Task>{task}</Task>}
-      <div className="spread" style={{ marginBottom: 22 }}>
+      <div className="spread" style={{ marginBottom: 'var(--sp-6)' }}>
         {modes.length > 1 ? (
           <Seg label="Direction" value={modeIdx} onChange={setModeIdx} options={modes.map((m, i) => ({ value: i, label: m.label }))} />
         ) : (
           <span />
         )}
-        <button className={`tbtn ${sprint ? 'on' : ''}`} onClick={() => setSprint((x) => !x)} aria-pressed={sprint} style={{ marginRight: -8 }}>
+        <button className={`tbtn ${sprint ? 'on' : ''}`} onClick={() => setSprint((x) => !x)} aria-pressed={sprint} style={{ marginRight: 'calc(var(--sp-2) * -1)' }}>
           {sprint ? '60-second sprint: on' : '60-second sprint'}
         </button>
       </div>
@@ -158,7 +158,7 @@ function DrillRun({ mode, sprint }) {
 
   return (
     <div>
-      <div className="spread" style={{ marginBottom: 10 }}>
+      <div className="spread" style={{ marginBottom: 'var(--sp-3)' }}>
         <span className="tally">
           <b className="good-text">{score.right}</b> right · <b className="bad-text">{score.wrong}</b> missed · streak <b>{score.streak}</b>
         </span>
@@ -235,7 +235,7 @@ export function OrderBuilder({ items, slotLabel = (i) => i + 1, task, success })
         })}
       </div>
       {remaining.length > 0 && (
-        <div className="pool" style={{ marginTop: 16 }}>
+        <div className="pool" style={{ marginTop: 'var(--sp-4)' }}>
           {remaining.map((x) => (
             <button key={x} className="chipbtn" onClick={() => { setPlaced((p) => [...p, x]); setChecked(false); }}>
               {x}
@@ -320,7 +320,7 @@ export function SequenceAnimator({ lanes, steps, initialStates, caption, task })
     <div>
       {task && <Task>{task}</Task>}
       {canPredict && (
-        <div className="spread" style={{ marginBottom: 16 }}>
+        <div className="spread" style={{ marginBottom: 'var(--sp-4)' }}>
           <Seg
             label="Mode"
             value={mode}
@@ -376,9 +376,9 @@ export function SequenceAnimator({ lanes, steps, initialStates, caption, task })
       {many && <PanHint />}
 
       {asking ? (
-        <div style={{ marginTop: 18 }}>
-          <p className="qstem" style={{ fontSize: 17 }}>{nextStep.ask.q}</p>
-          <div className="opts two" style={{ marginTop: 12 }}>
+        <div style={{ marginTop: 'var(--sp-5)' }}>
+          <p className="qstem" style={{ fontSize: 'var(--fs-18)' }}>{nextStep.ask.q}</p>
+          <div className="opts two" style={{ marginTop: 'var(--sp-3)' }}>
             {nextStep.ask.options.map((o, i) => (
               <button key={o} className="opt" onClick={() => answer(o)}>
                 <span className="opt-k">{i + 1}</span>
@@ -388,19 +388,19 @@ export function SequenceAnimator({ lanes, steps, initialStates, caption, task })
           </div>
         </div>
       ) : picked != null ? (
-        <div className={`follow ${picked === nextStep.ask.answer ? 'good' : 'bad'}`} style={{ marginTop: 18 }}>
+        <div className={`follow ${picked === nextStep.ask.answer ? 'good' : 'bad'}`} style={{ marginTop: 'var(--sp-5)' }}>
           <div className="follow-k">{picked === nextStep.ask.answer ? 'Correct' : `Answer: ${nextStep.ask.answer}`}</div>
           <p className="rest">{nextStep.note}</p>
         </div>
       ) : (
-        <div className="follow" style={{ marginTop: 18, minHeight: 48 }} aria-live="polite">
+        <div className="follow" style={{ marginTop: 'var(--sp-5)', minHeight: '3rem' }} aria-live="polite">
           {current ? (
             <>
               <div className="follow-k">Step {step} of {steps.length} · {current.title || current.label}</div>
               <p className="rest">{current.note}</p>
             </>
           ) : (
-            <p className="rest" style={{ marginTop: 0 }}>{mode === 'predict' ? 'Answer each question to reveal the next message.' : 'Step through the exchange one message at a time.'}</p>
+            <p className="rest" style={{ marginTop: '0' }}>{mode === 'predict' ? 'Answer each question to reveal the next message.' : 'Step through the exchange one message at a time.'}</p>
           )}
         </div>
       )}
@@ -478,17 +478,17 @@ export function CaseRunner({ cases, unit = 'Case', question, scoreLabel = 'corre
 
   return (
     <div>
-      <div className="spread" style={{ marginBottom: 8 }}>
+      <div className="spread" style={{ marginBottom: 'var(--sp-2)' }}>
         <span className="eyebrow">{unit} {(i % order.length) + 1} of {order.length}</span>
         <span className="tally"><b>{tally.ok}</b>/{tally.n} {scoreLabel}</span>
       </div>
-      <p className="qstem" style={{ marginBottom: 14 }}>{c.report}</p>
+      <p className="qstem" style={{ marginBottom: 'var(--sp-4)' }}>{c.report}</p>
       <Console lines={lines} />
-      <div className="spread" style={{ marginTop: 14 }}>
+      <div className="spread" style={{ marginTop: 'var(--sp-4)' }}>
         <span className="eyebrow">{question}</span>
-        {!picked && <button className="tbtn" onClick={() => setClues((x) => !x)} style={{ marginRight: -8 }}>{clues ? 'Hide clues' : 'Highlight clues'}</button>}
+        {!picked && <button className="tbtn" onClick={() => setClues((x) => !x)} style={{ marginRight: 'calc(var(--sp-2) * -1)' }}>{clues ? 'Hide clues' : 'Highlight clues'}</button>}
       </div>
-      <div className="opts two" style={{ marginTop: 8 }}>
+      <div className="opts two" style={{ marginTop: 'var(--sp-2)' }}>
         {opts.map((o, k) => {
           let cls = '';
           if (picked) cls = o === c.answer ? 'good' : o === picked ? 'bad' : '';

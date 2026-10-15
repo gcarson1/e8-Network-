@@ -41,31 +41,31 @@ export function WirelessStandards() {
   return (
     <div>
       <Task>Tap a standard for details. Filter by band to see which ones share a frequency.</Task>
-      <div className="toggles" style={{ marginBottom: 18 }}>
+      <div className="toggles" style={{ marginBottom: 'var(--sp-5)' }}>
         {['all', '2.4', '5', '6'].map((b) => (
           <button key={b} className="toggle" aria-pressed={band === b} onClick={() => setBand(b)}>{b === 'all' ? 'All bands' : `${b} GHz`}</button>
         ))}
       </div>
-      <div className="eyebrow" style={{ marginBottom: 8 }}>Max data rate · log scale</div>
+      <div className="eyebrow" style={{ marginBottom: 'var(--sp-2)' }}>Max data rate · log scale</div>
       <div className="rows">
         {shown.map((s) => (
           <button key={s.std} className="rateRow" onClick={() => setSel(s.std)} aria-pressed={sel === s.std}>
-            <span className="mono" style={{ fontWeight: 600, fontSize: 13 }}>{s.std}</span>
-            <span className="meter thick ink" style={{ height: 12 }}><span style={{ width: `${x(s.rate)}%`, background: sel === s.std ? 'var(--ink)' : 'var(--s2)' }} /></span>
+            <span className="mono" style={{ fontWeight: 600, fontSize: 'var(--fs-13)' }}>{s.std}</span>
+            <span className="meter thick ink" style={{ height: '0.75rem' }}><span style={{ width: `${x(s.rate)}%`, background: sel === s.std ? 'var(--ink)' : 'var(--s2)' }} /></span>
             <span className="mono small" style={{ textAlign: 'right' }}>{s.rateLabel}</span>
           </button>
         ))}
       </div>
       <div className="rateRow" style={{ border: 0, cursor: 'default' }} aria-hidden="true">
         <span />
-        <span className="mono faint" style={{ fontSize: 11, display: 'flex', justifyContent: 'space-between' }}><span>10M</span><span>100M</span><span>1G</span><span>10G</span></span>
+        <span className="mono faint" style={{ fontSize: 'var(--fs-11)', display: 'flex', justifyContent: 'space-between' }}><span>10M</span><span>100M</span><span>1G</span><span>10G</span></span>
         <span />
       </div>
       {cur && (
-        <div className="grid-2" style={{ marginTop: 18 }}>
+        <div className="grid-2" style={{ marginTop: 'var(--sp-5)' }}>
           <div>
             <h3>{cur.std}{cur.gen !== '—' ? ` · ${cur.gen}` : ''}</h3>
-            <p className="muted small" style={{ marginTop: 6 }}>{cur.tech}</p>
+            <p className="muted small" style={{ marginTop: 'var(--sp-1h)' }}>{cur.tech}</p>
           </div>
           <div className="kv">
             <div>Band</div><div>{cur.bands.map((b) => `${b} GHz`).join(' + ')}</div>
@@ -75,8 +75,8 @@ export function WirelessStandards() {
           </div>
         </div>
       )}
-      <div style={{ marginTop: 28 }}>
-        <div className="eyebrow" style={{ marginBottom: 8 }}>Band trade-offs</div>
+      <div style={{ marginTop: 'var(--sp-7)' }}>
+        <div className="eyebrow" style={{ marginBottom: 'var(--sp-2)' }}>Band trade-offs</div>
         <div className="scroll-x">
           <table className="table">
             <thead><tr><th>Band</th><th>Range</th><th>Channels</th><th>Notes</th></tr></thead>
@@ -87,7 +87,7 @@ export function WirelessStandards() {
             </tbody>
           </table>
         </div>
-        <p className="faint small" style={{ marginTop: 8 }}>Higher frequency: more bandwidth, less range and wall penetration.</p>
+        <p className="faint small" style={{ marginTop: 'var(--sp-2)' }}>Higher frequency: more bandwidth, less range and wall penetration.</p>
       </div>
     </div>
   );
@@ -139,11 +139,11 @@ export function ChannelPlan() {
   return (
     <div>
       <Task>Tap an AP to change its channel. Neighbors whose coverage overlaps must not use overlapping channels.</Task>
-      <div className="spread" style={{ marginBottom: 8 }}>
+      <div className="spread" style={{ marginBottom: 'var(--sp-2)' }}>
         <span className="tally">
           {solved ? <b className="good-text">No interference</b> : <><b className="bad-text">{conflicts.length}</b> overlapping neighbor pair{conflicts.length === 1 ? '' : 's'}</>}
         </span>
-        <button className="tbtn" onClick={() => setCh(APS.map(() => 6))} style={{ marginRight: -8 }}>Reset</button>
+        <button className="tbtn" onClick={() => setCh(APS.map(() => 6))} style={{ marginRight: 'calc(var(--sp-2) * -1)' }}>Reset</button>
       </div>
       <div className="diagram-scroll">
         <svg className="diagram" viewBox="0 0 680 340" role="img" aria-label="Floor plan with six access points">
@@ -177,8 +177,8 @@ export function ChannelPlan() {
         </svg>
       </div>
       <PanHint />
-      <div style={{ marginTop: 16 }}>
-        <div className="eyebrow" style={{ marginBottom: 6 }}>2.4 GHz spectrum in use</div>
+      <div style={{ marginTop: 'var(--sp-4)' }}>
+        <div className="eyebrow" style={{ marginBottom: 'var(--sp-1h)' }}>2.4 GHz spectrum in use</div>
         <svg className="diagram" viewBox="0 0 640 86" role="img" aria-label="2.4 GHz channel spectrum">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((n) => {
             const c = 2412 + 5 * (n - 1);
