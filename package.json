@@ -1,0 +1,19 @@
+{
+  "name": "netplus-study",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Single-file CompTIA Network+ (N10-009) study platform: exam simulator, practice, flashcards, and interactive labs.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node -e \"require('fs').renameSync('dist/index.html','dist/NetPlus-Study.html')\"",
+    "preview": "vite preview --port 4173 --open /NetPlus-Study.html"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "^6.4.4",
+    "vite-plugin-singlefile": "^2.3.3"
+  }
+}
