@@ -61,8 +61,13 @@ export function ipv4Facts(ipInt) {
   else if (o1 < 240) { cls = 'D'; defaultPrefix = null; }
   else { cls = 'E'; defaultPrefix = null; }
 
+  const o3 = (ipInt >>> 8) & 255;
   let kind = 'Public (globally routable)';
-  if (o1 === 10 || (o1 === 172 && o2 >= 16 && o2 <= 31) || (o1 === 192 && o2 === 168)) kind = 'Private (RFC 1918)';
+  if (ipInt === 0xffffffff) kind = 'Limited broadcast';
+  else if ((o1 === 192 && o2 === 0 && o3 === 2) || (o1 === 198 && o2 === 51 && o3 === 100) || (o1 === 203 && o2 === 0 && o3 === 113)) kind = 'Documentation (TEST-NET, never routed)';
+  else if (o1 === 198 && (o2 === 18 || o2 === 19)) kind = 'Benchmark testing (RFC 2544, not routed)';
+  else if (o1 === 192 && o2 === 0 && o3 === 0) kind = 'Special use (IETF protocol assignments)';
+  else if (o1 === 10 || (o1 === 172 && o2 >= 16 && o2 <= 31) || (o1 === 192 && o2 === 168)) kind = 'Private (RFC 1918)';
   else if (o1 === 127) kind = 'Loopback';
   else if (o1 === 169 && o2 === 254) kind = 'APIPA / link-local (DHCP failed)';
   else if (o1 === 100 && o2 >= 64 && o2 <= 127) kind = 'Carrier-grade NAT (RFC 6598)';

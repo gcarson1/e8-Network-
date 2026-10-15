@@ -34,7 +34,7 @@ const HANDSHAKE = [
 
 const TEARDOWN = [
   {
-    from: 0, to: 1, label: 'FIN', detail: 'seq=1201', title: 'Client FIN',
+    from: 0, to: 1, label: 'FIN, ACK', detail: 'seq=1201', title: 'Client FIN',
     ask: { q: 'The client is done sending. Which flag starts a graceful close?', options: ['RST', 'FIN', 'SYN', 'PSH'], answer: 'FIN' },
     note: 'FIN closes the client\'s sending direction. (RST would abort the connection immediately instead.)',
     states: ['FIN-WAIT-1', ''],
@@ -45,9 +45,9 @@ const TEARDOWN = [
     states: ['FIN-WAIT-2', 'CLOSE-WAIT'],
   },
   {
-    from: 1, to: 0, label: 'FIN', detail: 'seq=5001', title: 'Server FIN',
+    from: 1, to: 0, label: 'FIN, ACK', detail: 'seq=5001', title: 'Server FIN',
     ask: { q: 'The server application finishes. What does the server send now?', options: ['FIN', 'SYN', 'RST', 'Nothing, it just closes'], answer: 'FIN' },
-    note: 'Each side closes its own direction, so it takes four messages instead of three.',
+    note: 'Each side closes its own direction. Shown here as four segments; when the server has nothing left to send, its ACK and FIN often ride in one segment.',
     states: ['', 'LAST-ACK'],
   },
   {
@@ -67,7 +67,7 @@ const UDP = [
   {
     from: 1, to: 0, label: 'DNS response', detail: 'UDP → client port', title: 'Datagram back',
     ask: { q: 'If this reply is lost, what retransmits it?', options: ['UDP itself', 'The application', 'The router', 'TCP'], answer: 'The application' },
-    note: 'UDP never retransmits, so the application has to retry. Low overhead is why DNS, VoIP, streaming and TFTP use UDP.',
+    note: 'UDP never retransmits, so the application has to retry. Low overhead is why DNS, VoIP, live video and TFTP use UDP.',
   },
 ];
 

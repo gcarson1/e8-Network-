@@ -71,7 +71,7 @@ export function WirelessStandards() {
             <div>Band</div><div>{cur.bands.map((b) => `${b} GHz`).join(' + ')}</div>
             <div>Max rate</div><div>{cur.rateLabel}</div>
             <div>Channel width</div><div>{cur.width}</div>
-            <div>Year</div><div>{cur.year}{cur.std === '802.11ax' ? ' (6E: 2020)' : ''}</div>
+            <div>Year</div><div>{cur.year}{cur.std === '802.11ax' ? ' (6E certification: 2021)' : ''}</div>
           </div>
         </div>
       )}

@@ -11,7 +11,7 @@ const RAW = [
   // Networking Concepts
   [C, 'OSI model (layers 7 → 1)', 'Application, Presentation, Session, Transport, Network, Data Link, Physical. Mnemonic: "All People Seem To Need Data Processing."'],
   [C, 'PDU at each layer', 'Transport: segment (TCP) / datagram (UDP). Network: packet. Data Link: frame. Physical: bits.'],
-  [C, 'TCP vs. UDP', 'TCP is connection-oriented and reliable (handshake, sequencing, acknowledgments, retransmits). UDP is connectionless best-effort with lower overhead (DNS queries, VoIP, streaming, TFTP).'],
+  [C, 'TCP vs. UDP', 'TCP is connection-oriented and reliable (handshake, sequencing, acknowledgments, retransmits). UDP is connectionless best-effort with lower overhead (DNS queries, VoIP, live video, TFTP).'],
   [C, 'TCP three-way handshake', 'SYN → SYN-ACK → ACK. The client sends SYN, the server replies SYN-ACK, and the client confirms with ACK before data flows.'],
   [C, 'RFC 1918 private ranges', '10.0.0.0/8, 172.16.0.0/12 (172.16–172.31), 192.168.0.0/16. Not routable on the public internet; reach it through NAT.'],
   [C, 'APIPA', '169.254.0.0/16. Self-assigned when a host can\'t reach a DHCP server. Usually means a DHCP problem.'],
@@ -32,7 +32,7 @@ const RAW = [
   [C, 'Cloud service models', 'IaaS: you manage the OS and up. PaaS: you manage apps and data. SaaS: you just use the software.'],
   [C, 'Cat6a', '10 Gbps up to 100 m over twisted pair. Cat6 only reaches 10 Gbps to about 55 m.'],
   [C, 'Single-mode vs. multimode fiber', 'Single-mode (SMF): small core, laser, long distance (km). Multimode (MMF): larger core, LED/VCSEL, shorter runs (hundreds of meters).'],
-  [C, 'SFP / QSFP', 'Hot-swappable transceiver modules. SFP is a single lane (1G; SFP+ 10G); QSFP is four lanes (40G; QSFP28 100G).'],
+  [C, 'SFP / QSFP', 'Hot-swappable transceiver modules. SFP is a single lane (1G; SFP+ 10G); QSFP is four lanes (QSFP+ 40G; QSFP28 100G).'],
 
   // Network Implementations
   [I, 'VLAN', 'Virtual LAN: splits one physical switch into separate Layer 2 broadcast domains. Traffic between VLANs needs a router or Layer 3 switch.'],

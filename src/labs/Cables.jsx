@@ -105,16 +105,16 @@ const DRAW = {
 };
 
 const CONNECTORS = [
-  { name: 'RJ45', medium: 'Copper twisted pair', use: '8P8C plug for twisted-pair Ethernet (Cat5e/6/6a)' },
-  { name: 'RJ11', medium: 'Copper twisted pair', use: 'Smaller 6-position plug for telephone lines and DSL' },
-  { name: 'LC', medium: 'Fiber', use: 'Small form-factor latch fiber connector, usually duplex; the standard on SFPs' },
-  { name: 'SC', medium: 'Fiber', use: 'Square push-pull fiber connector; common in PON/FTTH and older switches' },
-  { name: 'ST', medium: 'Fiber', use: 'Round bayonet twist-lock fiber connector; legacy multimode runs' },
-  { name: 'MPO', medium: 'Fiber', use: 'Multi-fiber (12/24) ribbon connector for 40/100G parallel optics' },
-  { name: 'F-type', medium: 'Coax', use: 'Threaded coax connector for cable TV and cable modems (RG-6)' },
-  { name: 'BNC', medium: 'Coax', use: 'Bayonet coax connector; legacy 10BASE2 Ethernet and CCTV/video' },
-  { name: 'SFP', medium: 'Transceiver', use: 'Hot-swappable single-lane module (1G; SFP+ = 10G, SFP28 = 25G)' },
-  { name: 'QSFP', medium: 'Transceiver', use: 'Quad-lane hot-swappable module (40G; QSFP28 = 100G)' },
+  { name: 'RJ45', full: 'Registered jack 45', medium: 'Copper twisted pair', use: '8P8C plug for twisted-pair Ethernet (Cat5e/6/6a)' },
+  { name: 'RJ11', full: 'Registered jack 11', medium: 'Copper twisted pair', use: 'Smaller 6-position, 2-contact plug for telephone lines and DSL' },
+  { name: 'LC', full: 'Local connector', medium: 'Fiber', use: 'Small form-factor latch fiber connector, usually duplex; the standard on SFPs' },
+  { name: 'SC', full: 'Subscriber connector', medium: 'Fiber', use: 'Square push-pull fiber connector; common in PON/FTTH and older switches' },
+  { name: 'ST', full: 'Straight tip', medium: 'Fiber', use: 'Round bayonet twist-lock fiber connector; legacy multimode runs' },
+  { name: 'MPO', full: 'Multi-fiber push on', medium: 'Fiber', use: 'Multi-fiber (12/24) ribbon connector for 40/100G parallel optics' },
+  { name: 'F-type', full: 'F connector', medium: 'Coax', use: 'Threaded coax connector for cable TV and cable modems (RG-6)' },
+  { name: 'BNC', full: 'Bayonet Neill–Concelman', medium: 'Coax', use: 'Bayonet coax connector; legacy 10BASE2 Ethernet and CCTV/video' },
+  { name: 'SFP', full: 'Small form-factor pluggable', medium: 'Transceiver', use: 'Hot-swappable single-lane module (1G; SFP+ = 10G, SFP28 = 25G)' },
+  { name: 'QSFP', full: 'Quad small form-factor pluggable', medium: 'Transceiver', use: 'Quad-lane hot-swappable module (QSFP+ = 40G, QSFP28 = 100G)' },
 ];
 
 const CABLES = [
@@ -135,8 +135,8 @@ const STANDARDS = [
   { name: '1000BASE-T', spec: '1 Gbps over Cat5e or better copper, 100 m' },
   { name: '10GBASE-T', spec: '10 Gbps over Cat6a copper, 100 m' },
   { name: '1000BASE-SX', spec: '1 Gbps over multimode fiber, short wavelength' },
-  { name: '1000BASE-LX', spec: '1 Gbps over single-mode fiber, long wavelength (km)' },
-  { name: '10GBASE-SR', spec: '10 Gbps over multimode fiber, short range (~300–400 m)' },
+  { name: '1000BASE-LX', spec: '1 Gbps long wavelength, mainly single-mode fiber (5–10 km)' },
+  { name: '10GBASE-SR', spec: '10 Gbps over multimode fiber, short range (300 m on OM3, 400 m on OM4)' },
   { name: '10GBASE-LR', spec: '10 Gbps over single-mode fiber, up to 10 km' },
   { name: '100BASE-TX', spec: '100 Mbps Fast Ethernet over Cat5 copper' },
 ];
@@ -169,7 +169,7 @@ export function Connectors() {
               <div key={c.name} className="conn">
                 <Pic name={c.name} size={84} />
                 <div>
-                  <div className="hstack" style={{ gap: 'var(--sp-2)' }}><b>{c.name}</b><span className="pill">{c.medium}</span></div>
+                  <div className="hstack" style={{ gap: 'var(--sp-2)' }}><b>{c.name}</b><span className="muted small">{c.full}</span><span className="pill">{c.medium}</span></div>
                   <p className="muted small" style={{ marginTop: 'var(--sp-1)' }}>{c.use}</p>
                 </div>
               </div>
@@ -209,8 +209,8 @@ const T568A = ['White/green', 'Green', 'White/orange', 'Blue', 'White/blue', 'Or
 const PIN_ROLE = ['TX+', 'TX−', 'RX+', '', '', 'RX−', '', ''];
 
 const TASKS = [
-  { std: 'B', title: 'Wire this plug to T568B', note: 'T568B is the most common standard in the US.' },
-  { std: 'A', title: 'Wire this plug to T568A', note: 'T568A swaps the orange and green pairs. Required in some government installs.' },
+  { std: 'B', title: 'Wire this plug to T568B', note: 'T568B is common in US commercial installs. Either standard works if both ends match.' },
+  { std: 'A', title: 'Wire this plug to T568A', note: 'T568A swaps the orange and green pairs. TIA-568 lists it as preferred, and US federal installs require it.' },
   { std: 'B', title: 'Straight-through cable: end 1 is T568B. Wire end 2.', note: 'Straight-through = the same standard on both ends. PC to switch.' },
   { std: 'A', title: 'Crossover cable: end 1 is T568B. Wire end 2.', note: 'Crossover = T568A on one end and T568B on the other, so pins 1/2 (send) meet 3/6 (receive). Auto-MDIX makes this rare today.' },
 ];

@@ -140,11 +140,11 @@ const BLOCKS = {
   eth: { label: 'Ethernet', sub: 'to gateway MAC', x: 120, w: 110, fill: 'var(--ink)', ink: true },
   ip: { label: 'IP', sub: 'to 203.0.113.10', x: 230, w: 110, fill: 'var(--s2)', ink: true },
   tcp: { label: 'TCP', sub: ':51514 → :443', x: 340, w: 90, fill: 'var(--s3)' },
-  data: { label: 'Data', sub: 'GET /index.html', x: 430, w: 150, fill: 'var(--soft)' },
+  data: { label: 'Data', sub: 'GET / inside TLS', x: 430, w: 150, fill: 'var(--soft)' },
   fcs: { label: 'FCS', sub: 'CRC', x: 580, w: 50, fill: 'var(--ink)', ink: true },
 };
 const ROWS = [
-  { layer: 'L7–5', name: 'Application', pdu: 'Data', blocks: ['data'], note: 'The browser creates the request. Layers 7–5 handle format, encryption (TLS) and the session.' },
+  { layer: 'L7–5', name: 'Application', pdu: 'Data', blocks: ['data'], note: 'The browser builds an HTTP GET and TLS encrypts it. Layers 7–5 cover the request, its format and encryption, and the session.' },
   { layer: 'L4', name: 'Transport', pdu: 'Segment', blocks: ['tcp', 'data'], note: 'TCP adds source and destination ports plus sequence numbers. Port 443 tells the server which service to hand this to.' },
   { layer: 'L3', name: 'Network', pdu: 'Packet', blocks: ['ip', 'tcp', 'data'], note: 'IP adds source and destination IP addresses so routers can forward it across networks.' },
   { layer: 'L2', name: 'Data Link', pdu: 'Frame', blocks: ['eth', 'ip', 'tcp', 'data', 'fcs'], note: 'Ethernet adds MAC addresses for the next hop (the default gateway) and an FCS trailer to detect errors.' },

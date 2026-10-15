@@ -430,11 +430,12 @@ function Console({ lines }) {
   return (
     <pre className="console" aria-label="Command output">
       {lines.map((l, i) => {
-        const isCmd = l.startsWith('> ');
+        const explicit = l.match(/^([A-Za-z][\w-]*#) (.+)$/); // e.g. "Router# show ip arp"
+        const isCmd = l.startsWith('> ') || !!explicit;
         const parts = l.split('**');
         return (
           <span key={i} className={isCmd ? 'cmd' : 'out'}>
-            {isCmd ? `${promptFor(l.slice(2))} ${l.slice(2)}` : parts.map((p, j) => (j % 2 ? <span key={j} className="hl">{p}</span> : p))}
+            {isCmd ? (explicit ? `${explicit[1]} ${explicit[2]}` : `${promptFor(l.slice(2))} ${l.slice(2)}`) : parts.map((p, j) => (j % 2 ? <span key={j} className="hl">{p}</span> : p))}
             {'\n'}
           </span>
         );

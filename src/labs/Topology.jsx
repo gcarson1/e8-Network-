@@ -55,11 +55,11 @@ const TOPOLOGIES = {
     const taps = Array.from({ length: 6 }, (_, i) => ({ id: `T${i}`, x: 80 + i * 96, y: 175, kind: 'tap' }));
     const ends = taps.map((t, i) => ({ id: `PC${i + 1}`, x: t.x, y: i % 2 ? 275 : 75, kind: 'end' }));
     return {
-      label: 'Bus',
+      label: 'Bus (legacy)',
       nodes: [...taps, ...ends],
       links: [...taps.slice(1).map((t, i) => [taps[i].id, t.id]), ...ends.map((e, i) => [taps[i].id, e.id])],
       terminators: true,
-      about: 'All devices share one backbone cable with a terminator at each end (legacy coax 10BASE2/10BASE5). Only one device can transmit at a time.',
+      about: 'All devices share one backbone cable with a terminator at each end (10BASE2/10BASE5 coax). Only one device can transmit at a time. Legacy: not in the N10-009 objectives.',
       pros: ['Very little cable', 'Simple for tiny networks'],
       cons: ['A break in the backbone splits the network (and an unterminated end causes reflections)', 'Collisions grow as devices are added'],
       tip: 'Cut the backbone between two PCs.',
@@ -68,11 +68,11 @@ const TOPOLOGIES = {
   ring: (() => {
     const ends = ringNodes(6, 320, 180, 135);
     return {
-      label: 'Ring',
+      label: 'Ring (legacy)',
       nodes: ends,
       links: ends.map((e, i) => [e.id, ends[(i + 1) % ends.length].id]),
       directed: true,
-      about: 'Each device connects to two neighbors and data travels in one direction around the loop (Token Ring, FDDI, SONET). Dual rings add a backup loop.',
+      about: 'Each device connects to two neighbors and data travels in one direction around the loop (Token Ring, FDDI, SONET). Dual rings add a backup loop. Legacy for LANs: not in the N10-009 objectives.',
       pros: ['Predictable, orderly access to the medium', 'Dual rings can heal around one break'],
       cons: ['In a single ring, one break or failed node disrupts traffic', 'Adding a device interrupts the ring'],
       tip: 'Cut one link. Traffic only flows one way, so most pairs break.',
@@ -103,7 +103,7 @@ const TOPOLOGIES = {
       label: 'Spine & leaf',
       nodes: [...spines, ...leaves, ...servers],
       links: [...leaves.flatMap((l) => spines.map((s) => [s.id, l.id])), ...servers.map((s, i) => [leaves[i].id, s.id])],
-      about: 'Data center design: every leaf connects to every spine, so any two servers are always leaf → spine → leaf apart. Built for east-west traffic.',
+      about: 'Data center design: every leaf connects to every spine, so servers on different leaves are always exactly leaf → spine → leaf apart. Built for east-west traffic.',
       pros: ['Predictable low latency between any servers', 'Scale out by adding spines or leaves'],
       cons: ['Lots of cabling between tiers', 'Each server still depends on its leaf (dual-home it for redundancy)'],
       tip: 'Fail a spine. Every server can still reach every other.',

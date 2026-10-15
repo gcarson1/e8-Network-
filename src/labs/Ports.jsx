@@ -18,7 +18,7 @@ export const PORTS = [
   { port: '443', name: 'HTTPS', proto: 'TCP', desc: 'HTTP over TLS.' },
   { port: '445', name: 'SMB', proto: 'TCP', desc: 'Windows file and printer sharing.' },
   { port: '514', name: 'Syslog', proto: 'UDP', desc: 'Log messages to a central server.' },
-  { port: '587', name: 'SMTPS (submission)', proto: 'TCP', desc: 'Secure mail submission from clients.' },
+  { port: '587', name: 'SMTPS (submission)', proto: 'TCP', desc: 'Mail submission from clients, secured with STARTTLS. CompTIA calls 587 SMTPS; implicit-TLS SMTPS uses 465.' },
   { port: '636', name: 'LDAPS', proto: 'TCP', desc: 'LDAP over TLS.' },
   { port: '1433', name: 'SQL Server', proto: 'TCP', desc: 'Microsoft SQL Server.' },
   { port: '3389', name: 'RDP', proto: 'TCP', desc: 'Remote Desktop.' },
