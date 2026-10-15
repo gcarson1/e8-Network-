@@ -1,24 +1,26 @@
 import { useState } from 'react';
 import { Eyebrow } from './ui.jsx';
 
+const STATE_LABEL = { answered: 'answered', good: 'correct', bad: 'incorrect' };
+
 /**
- * GitHub-contribution-style grid: one square per question in the current
- * session, flowing top-to-bottom in columns of 7.
- * cell.state: 'empty' | 'answered' | 'ok' | 'bad'
+ * GitHub-contribution-style grid: one square per question in this session,
+ * filling top-to-bottom in columns of 7.
+ * cell.state: 'empty' | 'answered' | 'good' | 'bad'
  */
-export function BubbleGrid({ cells, current, onSelect, cellSize }) {
+export function BubbleGrid({ cells, current, onSelect }) {
   return (
-    <div className="bubbles" style={cellSize ? { '--cell': `${cellSize}px` } : undefined} role="list">
+    <div className="bubbles" role="list">
       {cells.map((c, i) => (
         <button
-          key={c.key ?? i}
+          key={i}
           role="listitem"
           type="button"
           className={`bubble ${c.state === 'empty' ? '' : c.state} ${i === current ? 'current' : ''} ${c.flagged ? 'flagged' : ''}`}
           onClick={onSelect ? () => onSelect(i) : undefined}
           disabled={!onSelect}
           title={c.title || `Question ${i + 1}`}
-          aria-label={`${c.title || `Question ${i + 1}`}${c.state !== 'empty' ? `, ${STATE_LABEL[c.state]}` : ', not answered'}${c.flagged ? ', flagged' : ''}`}
+          aria-label={`${c.title || `Question ${i + 1}`}, ${STATE_LABEL[c.state] || 'not answered'}${c.flagged ? ', flagged' : ''}`}
           aria-current={i === current ? 'step' : undefined}
         />
       ))}
@@ -26,39 +28,37 @@ export function BubbleGrid({ cells, current, onSelect, cellSize }) {
   );
 }
 
-const STATE_LABEL = { answered: 'answered', ok: 'correct', bad: 'incorrect' };
-
-/** Sidebar shown during an active exam / practice / flashcard session. */
+/** Side panel during a session: count, grid, legend, optional actions. */
 export function SessionSide({ title, stat, statLabel, cells, current, onSelect, legend, children }) {
   const [collapsed, setCollapsed] = useState(true);
   return (
-    <aside className={`panel side session-side ${collapsed ? 'collapsed' : ''}`} aria-label="Session progress">
-      <div className="section stack">
-        <div className="row between">
+    <aside className={`side session ${collapsed ? 'collapsed' : ''}`} aria-label="Session progress">
+      <div className="side-sec">
+        <div className="spread">
           <Eyebrow>{title}</Eyebrow>
-          <button className="btn link side-toggle" onClick={() => setCollapsed((c) => !c)} aria-expanded={!collapsed}>
+          <button className="tbtn side-toggle" style={{ margin: '-6px -8px' }} onClick={() => setCollapsed((c) => !c)} aria-expanded={!collapsed}>
             {collapsed ? 'Show grid' : 'Hide grid'}
           </button>
         </div>
-        <div className="row" style={{ alignItems: 'baseline', gap: 10 }}>
-          <span className="session-count">{stat}</span>
-          <span className="muted" style={{ fontSize: 13 }}>{statLabel}</span>
-        </div>
-        <div className="collapsible stack">
-          <div style={{ overflowX: 'auto', paddingBottom: 2 }}>
-            <BubbleGrid cells={cells} current={current} onSelect={onSelect} />
-          </div>
-          <div className="legend">
-            {legend.map((l) => (
-              <span key={l.label}>
-                <i className={l.cls} />
-                {l.label}
-              </span>
-            ))}
-          </div>
+        <div className="hstack" style={{ marginTop: 8, alignItems: 'baseline' }}>
+          <span className="big" style={{ fontSize: 26 }}>{stat}</span>
+          <span className="muted small">{statLabel}</span>
         </div>
       </div>
-      {children && <div className="section stack collapsible">{children}</div>}
+      <div className="side-sec stack collapsible">
+        <div style={{ overflowX: 'auto', padding: 2 }}>
+          <BubbleGrid cells={cells} current={current} onSelect={onSelect} />
+        </div>
+        <div className="legend">
+          {legend.map((l) => (
+            <span key={l.label}>
+              <i className={l.cls} />
+              {l.label}
+            </span>
+          ))}
+        </div>
+      </div>
+      {children && <div className="side-sec stack collapsible">{children}</div>}
     </aside>
   );
 }

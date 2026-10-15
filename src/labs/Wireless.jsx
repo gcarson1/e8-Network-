@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MatchDrill, TabbedLab } from './kit.jsx';
+import { MatchDrill, PanHint, Task } from './kit.jsx';
 
 const STDS = [
   { std: '802.11a', gen: '—', year: 1999, bands: ['5'], rate: 54, rateLabel: '54 Mbps', width: '20 MHz', tech: 'OFDM. First 5 GHz standard.' },
@@ -31,7 +31,7 @@ const BANDS = {
   },
 };
 
-function Explorer() {
+export function WirelessStandards() {
   const [band, setBand] = useState('all');
   const [sel, setSel] = useState('802.11ax');
   const shown = STDS.filter((s) => band === 'all' || s.bands.includes(band));
@@ -39,97 +39,57 @@ function Explorer() {
   const cur = STDS.find((s) => s.std === sel);
 
   return (
-    <>
-      <div className="section stack">
-        <div className="row">
-          <span className="muted" style={{ fontSize: 14 }}>Filter by band</span>
-          <div className="chips">
-            {['all', '2.4', '5', '6'].map((b) => (
-              <button key={b} className="chip" aria-pressed={band === b} onClick={() => setBand(b)}>
-                <span className="box" />
-                {b === 'all' ? 'All' : `${b} GHz`}
-              </button>
-            ))}
-          </div>
-        </div>
+    <div>
+      <Task>Tap a standard for details. Filter by band to see which ones share a frequency.</Task>
+      <div className="toggles" style={{ marginBottom: 18 }}>
+        {['all', '2.4', '5', '6'].map((b) => (
+          <button key={b} className="toggle" aria-pressed={band === b} onClick={() => setBand(b)}>{b === 'all' ? 'All bands' : `${b} GHz`}</button>
+        ))}
       </div>
-      <div className="section stack">
-        <div className="eyebrow">Max theoretical data rate (log scale)</div>
-        <div className="stack" style={{ gap: 4 }}>
-          {shown.map((s) => (
-            <button
-              key={s.std}
-              onClick={() => setSel(s.std)}
-              style={{ display: 'grid', gridTemplateColumns: '92px minmax(0,1fr) 88px', gap: 12, alignItems: 'center', background: sel === s.std ? 'var(--hover)' : 'none', border: 0, padding: '6px 4px', textAlign: 'left' }}
-              aria-pressed={sel === s.std}
-            >
-              <span className="mono" style={{ fontWeight: 650, fontSize: 13 }}>{s.std}</span>
-              <span style={{ position: 'relative', height: 14, background: 'var(--track)' }}>
-                <span style={{ position: 'absolute', inset: 0, width: `${x(s.rate)}%`, background: sel === s.std ? 'var(--fill)' : 'var(--shade-2)' }} />
-              </span>
-              <span className="mono" style={{ fontSize: 12.5, textAlign: 'right' }}>{s.rateLabel}</span>
-            </button>
-          ))}
-          <div style={{ display: 'grid', gridTemplateColumns: '92px minmax(0,1fr) 88px', gap: 12, padding: '0 4px' }}>
-            <span />
-            <span className="mono faint" style={{ fontSize: 11, display: 'flex', justifyContent: 'space-between' }}>
-              <span>10M</span><span>100M</span><span>1G</span><span>10G</span>
-            </span>
-          </div>
-        </div>
+      <div className="eyebrow" style={{ marginBottom: 8 }}>Max data rate · log scale</div>
+      <div className="rows">
+        {shown.map((s) => (
+          <button key={s.std} className="rateRow" onClick={() => setSel(s.std)} aria-pressed={sel === s.std}>
+            <span className="mono" style={{ fontWeight: 600, fontSize: 13 }}>{s.std}</span>
+            <span className="meter thick ink" style={{ height: 12 }}><span style={{ width: `${x(s.rate)}%`, background: sel === s.std ? 'var(--ink)' : 'var(--s2)' }} /></span>
+            <span className="mono small" style={{ textAlign: 'right' }}>{s.rateLabel}</span>
+          </button>
+        ))}
+      </div>
+      <div className="rateRow" style={{ border: 0, cursor: 'default' }} aria-hidden="true">
+        <span />
+        <span className="mono faint" style={{ fontSize: 11, display: 'flex', justifyContent: 'space-between' }}><span>10M</span><span>100M</span><span>1G</span><span>10G</span></span>
+        <span />
       </div>
       {cur && (
-        <div className="section two-col">
-          <div className="stack">
-            <h3>{cur.std} {cur.gen !== '—' && <span className="pill solid" style={{ marginLeft: 8 }}>{cur.gen}</span>}</h3>
-            <p className="muted">{cur.tech}</p>
+        <div className="grid-2" style={{ marginTop: 18 }}>
+          <div>
+            <h3>{cur.std}{cur.gen !== '—' ? ` · ${cur.gen}` : ''}</h3>
+            <p className="muted small" style={{ marginTop: 6 }}>{cur.tech}</p>
           </div>
           <div className="kv">
-            <div>Year</div><div>{cur.year}{cur.std === '802.11ax' ? ' (6E: 2020)' : ''}</div>
-            <div>Band(s)</div><div>{cur.bands.map((b) => `${b} GHz`).join(' + ')}</div>
+            <div>Band</div><div>{cur.bands.map((b) => `${b} GHz`).join(' + ')}</div>
             <div>Max rate</div><div>{cur.rateLabel}</div>
             <div>Channel width</div><div>{cur.width}</div>
+            <div>Year</div><div>{cur.year}{cur.std === '802.11ax' ? ' (6E: 2020)' : ''}</div>
           </div>
         </div>
       )}
-      <div className="section">
-        <div className="table-wrap">
-          <table className="table">
-            <thead><tr><th>Standard</th><th>Name</th><th>Band</th><th>Max rate</th><th>Width</th></tr></thead>
-            <tbody>
-              {STDS.map((s) => (
-                <tr key={s.std} className={`clickable ${sel === s.std ? 'sel' : ''}`} onClick={() => setSel(s.std)} style={{ opacity: shown.includes(s) ? 1 : 0.35 }}>
-                  <td className="mono" style={{ fontWeight: 650 }}>{s.std}</td>
-                  <td>{s.gen}</td>
-                  <td className="mono">{s.bands.join(' / ')} GHz</td>
-                  <td className="mono">{s.rateLabel}</td>
-                  <td className="mono">{s.width}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div className="section stack">
-        <div className="eyebrow">Band trade-offs</div>
-        <div className="table-wrap">
+      <div style={{ marginTop: 28 }}>
+        <div className="eyebrow" style={{ marginBottom: 8 }}>Band trade-offs</div>
+        <div className="scroll-x">
           <table className="table">
             <thead><tr><th>Band</th><th>Range</th><th>Channels</th><th>Notes</th></tr></thead>
             <tbody>
               {Object.values(BANDS).map((b) => (
-                <tr key={b.name}>
-                  <td style={{ fontWeight: 650, whiteSpace: 'nowrap' }}>{b.name}</td>
-                  <td>{b.range}</td>
-                  <td className="muted">{b.channels}</td>
-                  <td className="muted">{b.issues}</td>
-                </tr>
+                <tr key={b.name}><td style={{ whiteSpace: 'nowrap' }}><b>{b.name}</b></td><td>{b.range}</td><td className="muted">{b.channels}</td><td className="muted">{b.issues}</td></tr>
               ))}
             </tbody>
           </table>
         </div>
-        <p className="faint" style={{ fontSize: 13 }}>Rule of thumb: higher frequency means more bandwidth but less range and penetration.</p>
+        <p className="faint small" style={{ marginTop: 8 }}>Higher frequency: more bandwidth, less range and wall penetration.</p>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -142,32 +102,108 @@ const SECURITY = [
   { k: 'WPA3-Enterprise', v: '802.1X with an optional 192-bit security suite' },
 ];
 
-export default function Wireless() {
+export const WirelessDrill = () => (
+  <MatchDrill
+    task="Speeds, bands and security types."
+    modes={[
+      { label: 'Standard → speed', items: STDS, prompt: (s) => <span className="mono">{s.std}</span>, answer: (s) => s.rateLabel, note: (s) => `${s.std}: ${s.bands.join('/')} GHz. ${s.tech}` },
+      { label: 'Standard → band', items: STDS, prompt: (s) => <span className="mono">{s.std}</span>, answer: (s) => `${s.bands.join(' + ')} GHz`, note: (s) => s.tech },
+      { label: 'Wi-Fi name → standard', items: STDS.filter((s) => s.gen !== '—'), prompt: (s) => s.gen, answer: (s) => s.std, pool: STDS.map((s) => s.std) },
+      { label: 'Security', items: SECURITY, prompt: (s) => s.k, answer: (s) => s.v },
+    ]}
+  />
+);
+
+// ───────── 2.4 GHz channel planning ─────────
+const APS = [
+  { id: 'AP1', x: 130, y: 110 }, { id: 'AP2', x: 310, y: 110 }, { id: 'AP3', x: 490, y: 110 },
+  { id: 'AP4', x: 220, y: 250 }, { id: 'AP5', x: 400, y: 250 }, { id: 'AP6', x: 580, y: 250 },
+];
+const NEIGHBORS = [];
+APS.forEach((a, i) => APS.forEach((b, j) => {
+  if (j > i && Math.hypot(a.x - b.x, a.y - b.y) < 200) NEIGHBORS.push([i, j]);
+}));
+const CHANNELS = [1, 3, 6, 9, 11];
+const overlaps = (a, b) => Math.abs(a - b) < 5;
+
+export function ChannelPlan() {
+  const [ch, setCh] = useState(() => APS.map(() => 6));
+  const cycle = (i) => setCh((c) => c.map((v, j) => (j === i ? CHANNELS[(CHANNELS.indexOf(v) + 1) % CHANNELS.length] : v)));
+  const conflicts = NEIGHBORS.filter(([i, j]) => overlaps(ch[i], ch[j]));
+  const solved = conflicts.length === 0;
+
+  // Spectrum: channel n is centered on 2412 + 5(n − 1) MHz and ~22 MHz wide.
+  const fx = (mhz) => 20 + ((mhz - 2400) / 86) * 600;
+  const used = new Set(ch);
+
   return (
-    <TabbedLab
-      tabs={[
-        { value: 'explore', label: 'Standards', render: () => <Explorer /> },
-        {
-          value: 'drill',
-          label: 'Drill',
-          render: () => (
-            <MatchDrill
-              modes={[
-                { label: 'Standard → speed', items: STDS, prompt: (s) => <span className="mono">{s.std}</span>, answer: (s) => s.rateLabel, note: (s) => `${s.std}: ${s.bands.join('/')} GHz · ${s.tech}` },
-                { label: 'Standard → band', items: STDS, prompt: (s) => <span className="mono">{s.std}</span>, answer: (s) => `${s.bands.join(' + ')} GHz`, note: (s) => s.tech },
-                {
-                  label: 'Wi-Fi name → standard',
-                  items: STDS.filter((s) => s.gen !== '—'),
-                  prompt: (s) => s.gen,
-                  answer: (s) => s.std,
-                  pool: STDS.map((s) => s.std),
-                },
-                { label: 'Security', items: SECURITY, prompt: (s) => s.k, answer: (s) => s.v },
-              ]}
-            />
-          ),
-        },
-      ]}
-    />
+    <div>
+      <Task>Tap an AP to change its channel. Neighbors whose coverage overlaps must not use overlapping channels.</Task>
+      <div className="spread" style={{ marginBottom: 8 }}>
+        <span className="tally">
+          {solved ? <b className="good-text">No interference</b> : <><b className="bad-text">{conflicts.length}</b> overlapping neighbor pair{conflicts.length === 1 ? '' : 's'}</>}
+        </span>
+        <button className="tbtn" onClick={() => setCh(APS.map(() => 6))} style={{ marginRight: -8 }}>Reset</button>
+      </div>
+      <div className="diagram-scroll">
+        <svg className="diagram" viewBox="0 0 680 340" role="img" aria-label="Floor plan with six access points">
+          <defs><clipPath id="floor"><rect x={10} y={10} width={660} height={320} /></clipPath></defs>
+          <g clipPath="url(#floor)">
+            {APS.map((a) => <circle key={a.id} cx={a.x} cy={a.y} r={118} style={{ fill: 'var(--text)', opacity: 0.045 }} />)}
+          </g>
+          <rect x={10} y={10} width={660} height={320} style={{ fill: 'none', stroke: 'var(--line-strong)', strokeWidth: 2 }} />
+          {NEIGHBORS.map(([i, j]) => {
+            const bad = overlaps(ch[i], ch[j]);
+            const a = APS[i];
+            const b = APS[j];
+            return (
+              <g key={`${i}-${j}`}>
+                <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} className={`wire ${bad ? 'cut' : 'soft'}`} strokeWidth={bad ? 2.5 : 1.5} />
+                {bad && (
+                  <text x={(a.x + b.x) / 2} y={(a.y + b.y) / 2 - 6} textAnchor="middle" className="halo" style={{ fontSize: 10.5, fontWeight: 600, fill: 'var(--bad)' }}>
+                    {ch[i] === ch[j] ? 'same channel' : 'overlap'}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+          {APS.map((a, i) => (
+            <g key={a.id} className="hit" onClick={() => cycle(i)} role="button" aria-label={`${a.id}, channel ${ch[i]}. Activate to change.`}>
+              <rect x={a.x - 34} y={a.y - 24} width={68} height={48} className="node ink" />
+              <text x={a.x} y={a.y - 6} textAnchor="middle" className="on-ink" style={{ fontSize: 11 }}>{a.id}</text>
+              <text x={a.x} y={a.y + 14} textAnchor="middle" className="mono on-ink" style={{ fontSize: 17, fontWeight: 700 }}>{ch[i]}</text>
+            </g>
+          ))}
+        </svg>
+      </div>
+      <PanHint />
+      <div style={{ marginTop: 16 }}>
+        <div className="eyebrow" style={{ marginBottom: 6 }}>2.4 GHz spectrum in use</div>
+        <svg className="diagram" viewBox="0 0 640 86" role="img" aria-label="2.4 GHz channel spectrum">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((n) => {
+            const c = 2412 + 5 * (n - 1);
+            const on = used.has(n);
+            return (
+              <g key={n}>
+                <path
+                  d={`M${fx(c - 11)} 62 Q ${fx(c)} ${on ? -6 : 22} ${fx(c + 11)} 62`}
+                  style={{ fill: on ? 'var(--text)' : 'none', fillOpacity: on ? 0.14 : 0, stroke: on ? 'var(--text)' : 'var(--line-strong)', strokeWidth: on ? 2 : 1 }}
+                />
+                <text x={fx(c)} y={78} textAnchor="middle" className={`mono ${on ? '' : 'faint'}`} style={{ fontSize: 10.5, fontWeight: on ? 700 : 400 }}>{n}</text>
+              </g>
+            );
+          })}
+          <line x1={fx(2400)} y1={62} x2={fx(2486)} y2={62} className="wire soft" strokeWidth="1" />
+        </svg>
+      </div>
+      <div className={`follow ${solved ? 'good' : ''}`}>
+        <div className="follow-k">{solved ? 'Clean plan' : 'Why it matters'}</div>
+        <p className="rest">
+          {solved
+            ? 'Channels 1, 6 and 11 are the only three in 2.4 GHz that don\'t overlap, so neighbors alternate between them.'
+            : 'Each 2.4 GHz channel is about 22 MHz wide but only 5 MHz apart, so nearby channels bleed into each other. Same channel = co-channel interference (APs take turns). Overlapping channels = adjacent-channel interference (worse: corrupted frames).'}
+        </p>
+      </div>
+    </div>
   );
 }

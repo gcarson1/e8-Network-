@@ -1,4 +1,7 @@
-import { MatchDrill, TabbedLab } from './kit.jsx';
+import { useState } from 'react';
+import { MatchDrill, Task } from './kit.jsx';
+import { Seg } from '../components/ui.jsx';
+import { shuffle } from '../lib/util.js';
 
 // Simplified front-view line drawings of each connector.
 const S = { fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinejoin: 'round' };
@@ -144,70 +147,178 @@ const Pic = ({ name, size = 150 }) => (
   </svg>
 );
 
-function Gallery() {
+export function Connectors() {
+  const [quiz, setQuiz] = useState(false);
   return (
-    <div className="section">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', borderTop: '1px solid var(--line)', borderLeft: '1px solid var(--line)' }}>
-        {CONNECTORS.map((c) => (
-          <div key={c.name} style={{ padding: 16, borderRight: '1px solid var(--line)', borderBottom: '1px solid var(--line)' }} className="stack">
-            <Pic name={c.name} size={110} />
-            <div className="row between">
-              <b>{c.name}</b>
-              <span className="pill">{c.medium}</span>
-            </div>
-            <p className="muted" style={{ fontSize: 13.5 }}>{c.use}</p>
-          </div>
-        ))}
+    <div>
+      <div className="spread" style={{ marginBottom: 18 }}>
+        <Seg label="Mode" value={quiz} onChange={setQuiz} options={[{ value: false, label: 'Learn' }, { value: true, label: 'Quiz me' }]} />
       </div>
-      <p className="faint" style={{ fontSize: 12.5, marginTop: 12 }}>Drawings are simplified front views, not to scale.</p>
+      {quiz ? (
+        <MatchDrill
+          task="Name the connector from its front view."
+          modes={[
+            { label: 'Picture → name', items: CONNECTORS, prompt: (c) => <Pic name={c.name} />, answer: (c) => c.name, note: (c) => c.use },
+            { label: 'Use → name', items: CONNECTORS, prompt: (c) => c.use, answer: (c) => c.name, small: true },
+          ]}
+        />
+      ) : (
+        <>
+          <div className="rows">
+            {CONNECTORS.map((c) => (
+              <div key={c.name} className="conn">
+                <Pic name={c.name} size={84} />
+                <div>
+                  <div className="hstack" style={{ gap: 8 }}><b>{c.name}</b><span className="pill">{c.medium}</span></div>
+                  <p className="muted small" style={{ marginTop: 3 }}>{c.use}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="faint small" style={{ marginTop: 10 }}>Simplified front views, not to scale.</p>
+        </>
+      )}
     </div>
   );
 }
 
-export default function Cables() {
+export const CableSpecs = () => (
+  <MatchDrill
+    task="Match each cable to its speed and distance."
+    modes={[
+      { label: 'Cable → spec', items: CABLES, prompt: (c) => c.name, answer: (c) => c.spec },
+      { label: 'Spec → cable', items: CABLES, prompt: (c) => c.spec, answer: (c) => c.name, small: true },
+    ]}
+  />
+);
+
+export const EthStandards = () => (
+  <MatchDrill
+    task="Decode the name: speed, BASE (baseband), medium. T = twisted pair, SR/SX = short-reach multimode, LR/LX = long-reach single-mode."
+    modes={[
+      { label: 'Standard → meaning', items: STANDARDS, prompt: (c) => <span className="mono">{c.name}</span>, answer: (c) => c.spec },
+      { label: 'Meaning → standard', items: STANDARDS, prompt: (c) => c.spec, answer: (c) => c.name, small: true },
+    ]}
+  />
+);
+
+// ───────── RJ45 wiring ─────────
+const WIRE_COLORS = { orange: '#e07b24', green: '#3c8d50', blue: '#2e68c0', brown: '#7a4b2a' };
+const T568B = ['White/orange', 'Orange', 'White/green', 'Blue', 'White/blue', 'Green', 'White/brown', 'Brown'];
+const T568A = ['White/green', 'Green', 'White/orange', 'Blue', 'White/blue', 'Orange', 'White/brown', 'Brown'];
+const PIN_ROLE = ['TX+', 'TX−', 'RX+', '', '', 'RX−', '', ''];
+
+const TASKS = [
+  { std: 'B', title: 'Wire this plug to T568B', note: 'T568B is the most common standard in the US.' },
+  { std: 'A', title: 'Wire this plug to T568A', note: 'T568A swaps the orange and green pairs. Required in some government installs.' },
+  { std: 'B', title: 'Straight-through cable: end 1 is T568B. Wire end 2.', note: 'Straight-through = the same standard on both ends. PC to switch.' },
+  { std: 'A', title: 'Crossover cable: end 1 is T568B. Wire end 2.', note: 'Crossover = T568A on one end and T568B on the other, so pins 1/2 (send) meet 3/6 (receive). Auto-MDIX makes this rare today.' },
+];
+
+function Wire({ name, w = 26, h = 54 }) {
+  const color = WIRE_COLORS[name.replace('White/', '').toLowerCase()];
+  const striped = name.startsWith('White');
+  const id = `stripe-${name.replace('/', '')}`;
   return (
-    <TabbedLab
-      tabs={[
-        { value: 'gallery', label: 'Gallery', render: () => <Gallery /> },
-        {
-          value: 'identify',
-          label: 'Identify',
-          render: () => (
-            <MatchDrill
-              intro="Name the connector from its front view."
-              modes={[
-                { label: 'Picture → name', items: CONNECTORS, prompt: (c) => <Pic name={c.name} />, answer: (c) => c.name, note: (c) => `${c.name}: ${c.use}.` },
-                { label: 'Use → name', items: CONNECTORS, prompt: (c) => c.use, answer: (c) => c.name, small: true },
-              ]}
-            />
-          ),
-        },
-        {
-          value: 'cables',
-          label: 'Cable specs',
-          render: () => (
-            <MatchDrill
-              modes={[
-                { label: 'Cable → spec', items: CABLES, prompt: (c) => c.name, answer: (c) => c.spec },
-                { label: 'Spec → cable', items: CABLES, prompt: (c) => c.spec, answer: (c) => c.name, small: true },
-              ]}
-            />
-          ),
-        },
-        {
-          value: 'standards',
-          label: 'Ethernet standards',
-          render: () => (
-            <MatchDrill
-              intro="Read the name: speed · BASE (baseband) · medium. T = twisted pair, S = short-reach multimode, L = long-reach single-mode."
-              modes={[
-                { label: 'Standard → meaning', items: STANDARDS, prompt: (c) => <span className="mono">{c.name}</span>, answer: (c) => c.spec },
-                { label: 'Meaning → standard', items: STANDARDS, prompt: (c) => c.spec, answer: (c) => c.name, small: true },
-              ]}
-            />
-          ),
-        },
-      ]}
-    />
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true" style={{ display: 'block' }}>
+      {striped && (
+        <defs>
+          <pattern id={id} width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+            <rect width="8" height="8" fill="#f4f3ef" />
+            <rect width="3.5" height="8" fill={color} />
+          </pattern>
+        </defs>
+      )}
+      <rect x="1" y="1" width={w - 2} height={h - 2} fill={striped ? `url(#${id})` : color} stroke="var(--line-strong)" />
+    </svg>
+  );
+}
+
+export function WireRj45() {
+  const [t, setT] = useState(0);
+  const task = TASKS[t];
+  const target = task.std === 'B' ? T568B : T568A;
+  const [pins, setPins] = useState([]);
+  const [pool, setPool] = useState(() => shuffle(T568B));
+  const [checked, setChecked] = useState(false);
+
+  const place = (w) => {
+    if (checked || pins.length >= 8) return;
+    setPins((p) => [...p, w]);
+  };
+  const removeAt = (i) => {
+    if (checked) return;
+    setPins((p) => p.filter((_, j) => j !== i));
+  };
+  const reset = (nt = t) => {
+    setT(nt);
+    setPins([]);
+    setPool(shuffle(T568B));
+    setChecked(false);
+  };
+  const wrong = checked ? pins.filter((w, i) => w !== target[i]).length : 0;
+  const remaining = pool.filter((w) => !pins.includes(w));
+
+  return (
+    <div>
+      <div className="spread" style={{ marginBottom: 8 }}>
+        <span className="eyebrow">Task {t + 1} of {TASKS.length}</span>
+        <div className="hstack" style={{ gap: 2, marginRight: -8 }}>
+          {TASKS.map((_, i) => (
+            <button key={i} className={`tbtn ${i === t ? 'on' : ''}`} onClick={() => reset(i)}>{i + 1}</button>
+          ))}
+        </div>
+      </div>
+      <p className="qstem" style={{ marginBottom: 6 }}>{task.title}</p>
+      <Task>Tap wires in order for pins 1 → 8 (clip facing down, pin 1 on the left). Tap a pin to clear it.</Task>
+
+      <div className="plug" role="group" aria-label="RJ45 pins">
+        {Array.from({ length: 8 }, (_, i) => {
+          const w = pins[i];
+          const state = checked && w ? (w === target[i] ? 'good' : 'bad') : '';
+          return (
+            <button key={i} className={`pin ${state}`} onClick={() => w && removeAt(i)} aria-label={`Pin ${i + 1}${w ? `: ${w}` : ', empty'}`}>
+              <span className="pin-n mono">{i + 1}</span>
+              {w ? <Wire name={w} /> : <span className="pin-empty" />}
+              <span className={`pin-mk mono ${state === 'good' ? 'good-text' : state === 'bad' ? 'bad-text' : ''}`}>{state === 'good' ? '✓' : state === 'bad' ? '✕' : PIN_ROLE[i] && checked ? PIN_ROLE[i] : ''}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {remaining.length > 0 && !checked && (
+        <div className="pool" style={{ marginTop: 16 }}>
+          {remaining.map((w) => (
+            <button key={w} className="chipbtn wirebtn" onClick={() => place(w)}>
+              <Wire name={w} w={14} h={22} />
+              {w}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {checked && (
+        <div className={`follow ${wrong ? 'bad' : 'good'}`}>
+          <div className="follow-k">{wrong ? `${wrong} pin${wrong === 1 ? '' : 's'} wrong` : `Correct: T568${task.std}`}</div>
+          <p className="rest">
+            {wrong ? `T568${task.std}: ${target.join(', ')}.` : task.note} Pins 1/2 send and 3/6 receive on 10/100 Ethernet; gigabit uses all four pairs.
+          </p>
+        </div>
+      )}
+      <div className="qactions">
+        {!checked ? (
+          <button className="btn primary" disabled={pins.length < 8} onClick={() => setChecked(true)}>Check wiring</button>
+        ) : wrong ? (
+          <button className="btn primary" onClick={() => { setPins((p) => p.slice(0, p.findIndex((w, i) => w !== target[i]))); setChecked(false); }}>Fix from the first wrong pin</button>
+        ) : t < TASKS.length - 1 ? (
+          <button className="btn primary" onClick={() => reset(t + 1)}>Next task →</button>
+        ) : (
+          <button className="btn primary" onClick={() => reset(0)}>Start over</button>
+        )}
+        {checked && wrong > 0 && t < TASKS.length - 1 && <button className="tbtn" onClick={() => reset(t + 1)}>Skip to next task</button>}
+        {!checked && <button className="tbtn" onClick={() => reset()}>Clear</button>}
+        {!(checked && !wrong) && <button className="tbtn" onClick={() => { setPins(target.slice()); setChecked(true); }}>Show answer</button>}
+      </div>
+    </div>
   );
 }

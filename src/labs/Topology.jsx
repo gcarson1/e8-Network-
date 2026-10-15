@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { PanHint } from './kit.jsx';
+import { useState } from 'react';
+import { MatchDrill, PanHint, Task } from './kit.jsx';
 import { Seg } from '../components/ui.jsx';
 
 // Each topology: nodes (kind: end | infra | tap), links [a, b], directed?
@@ -138,15 +138,65 @@ function reachability(topo, dead, cut) {
   return { ok, total };
 }
 
-export default function Topology() {
+
+function Diagram({ topo, dead = new Set(), cut = new Set(), onNode, onLink, label }) {
+  const pos = Object.fromEntries(topo.nodes.map((n) => [n.id, n]));
+  const interactive = !!onNode;
+  return (
+    <svg className="diagram" viewBox="0 0 640 350" role="img" aria-label={label || `${topo.label} topology`}>
+      <defs>
+        <marker id="ring-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" style={{ fill: 'var(--text)' }} />
+        </marker>
+      </defs>
+      {topo.links.map(([a, b], i) => {
+        const A = pos[a];
+        const B = pos[b];
+        const isCut = cut.has(i);
+        const mx = (A.x + B.x) / 2;
+        const my = (A.y + B.y) / 2;
+        return (
+          <g key={i} className={interactive ? 'hit' : ''} onClick={onLink ? () => onLink(i) : undefined} role={interactive ? 'button' : undefined} aria-label={interactive ? `Link ${a} to ${b}${isCut ? ', cut' : ''}` : undefined}>
+            {interactive && <line x1={A.x} y1={A.y} x2={B.x} y2={B.y} stroke="transparent" strokeWidth="16" />}
+            <line x1={A.x} y1={A.y} x2={B.x} y2={B.y} className={`wire ${isCut ? 'cut' : ''}`} />
+            {topo.directed && !isCut && (
+              <line x1={mx - (B.x - A.x) * 0.02} y1={my - (B.y - A.y) * 0.02} x2={mx + (B.x - A.x) * 0.02} y2={my + (B.y - A.y) * 0.02} className="wire" markerEnd="url(#ring-arrow)" />
+            )}
+            {isCut && <text x={mx} y={my + 5} textAnchor="middle" style={{ fontSize: 16, fontWeight: 700, fill: 'var(--bad)' }}>✕</text>}
+          </g>
+        );
+      })}
+      {topo.terminators && (
+        <>
+          <rect x={60} y={168} width={8} height={14} className="node ink" />
+          <rect x={572} y={168} width={8} height={14} className="node ink" />
+        </>
+      )}
+      {topo.nodes.map((n) => {
+        if (n.kind === 'tap') return <circle key={n.id} cx={n.x} cy={n.y} r={3} style={{ fill: 'var(--text)' }} />;
+        const isDead = dead.has(n.id);
+        const infra = n.kind === 'infra';
+        const w = infra ? 74 : 54;
+        return (
+          <g key={n.id} className={interactive ? 'hit' : ''} onClick={onNode ? () => onNode(n.id) : undefined} role={interactive ? 'button' : undefined} aria-label={interactive ? `${n.label || n.id}${isDead ? ', failed' : ''}` : undefined}>
+            <rect x={n.x - w / 2} y={n.y - 15} width={w} height={30} className={`node ${infra && !isDead ? 'ink' : ''} ${isDead ? 'dead' : ''}`} />
+            <text x={n.x} y={n.y + 5} textAnchor="middle" className="mono" style={{ fontSize: 12, fontWeight: 600, fill: isDead ? 'var(--bad)' : infra ? 'var(--ink-text)' : 'var(--text)' }}>
+              {label === 'hide' ? '' : n.label || n.id}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+export function TopologySandbox() {
   const [key, setKey] = useState('star');
   const [dead, setDead] = useState(new Set());
   const [cut, setCut] = useState(new Set());
   const topo = TOPOLOGIES[key];
-  const pos = useMemo(() => Object.fromEntries(topo.nodes.map((n) => [n.id, n])), [topo]);
   const r = reachability(topo, dead, cut);
   const pct = r.total ? Math.round((r.ok / r.total) * 100) : 0;
-
   const toggle = (set, setter, v) => {
     const n = new Set(set);
     n.has(v) ? n.delete(v) : n.add(v);
@@ -160,89 +210,56 @@ export default function Topology() {
   const nEnds = topo.nodes.filter((n) => n.kind === 'end').length;
 
   return (
-    <>
-      <div className="section stack">
-        <Seg label="Topology" value={key} onChange={change} options={Object.entries(TOPOLOGIES).map(([value, t]) => ({ value, label: t.label }))} />
+    <div>
+      <Task>Click a device to fail it or a link to cut it, and watch how many devices can still talk. {topo.tip}</Task>
+      <Seg label="Topology" value={key} onChange={change} options={Object.entries(TOPOLOGIES).map(([value, t]) => ({ value, label: t.label }))} />
+      <div className="spread" style={{ margin: '20px 0 6px' }}>
+        <span className="tally">
+          <b className={pct === 100 ? 'good-text' : pct < 60 ? 'bad-text' : ''}>{pct}%</b> of device pairs connected · {topo.links.length} links
+          {topo.formula && ` · n(n−1)/2 = ${nEnds}·${nEnds - 1}/2`}
+        </span>
+        <button className="tbtn" onClick={() => { setDead(new Set()); setCut(new Set()); }} disabled={!dead.size && !cut.size} style={{ marginRight: -8 }}>Repair all</button>
       </div>
-      <div className="section stack-lg">
-        <div className="row between">
-          <div className="scorebar">
-            <span><b className={pct === 100 ? 'ok-text' : pct < 60 ? 'bad-text' : ''}>{pct}%</b> of device pairs can talk</span>
-            <span><b>{topo.links.length}</b> links</span>
-            {topo.formula && <span>n(n−1)/2 = {nEnds}·{nEnds - 1}/2 = {topo.links.length}</span>}
-          </div>
-          <button className="btn link small" onClick={() => { setDead(new Set()); setCut(new Set()); }} disabled={!dead.size && !cut.size}>
-            Repair all
-          </button>
-        </div>
-        <div className="diagram-scroll">
-          <svg className="diagram" viewBox="0 0 640 350" role="img" aria-label={`${topo.label} topology diagram`}>
-            <defs>
-              <marker id="ring-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                <path d="M0,0 L10,5 L0,10 z" style={{ fill: 'var(--text)' }} />
-              </marker>
-            </defs>
-            {topo.links.map(([a, b], i) => {
-              const A = pos[a];
-              const B = pos[b];
-              const isCut = cut.has(i);
-              const mx = (A.x + B.x) / 2;
-              const my = (A.y + B.y) / 2;
-              return (
-                <g key={i} className="hit" onClick={() => toggle(cut, setCut, i)} role="button" aria-label={`Link ${a} to ${b}${isCut ? ' (cut)' : ''}`}>
-                  <line x1={A.x} y1={A.y} x2={B.x} y2={B.y} stroke="transparent" strokeWidth="16" />
-                  <line x1={A.x} y1={A.y} x2={B.x} y2={B.y} className={`link ${isCut ? 'cut' : ''}`} />
-                  {topo.directed && !isCut && <line x1={mx - (B.x - A.x) * 0.02} y1={my - (B.y - A.y) * 0.02} x2={mx + (B.x - A.x) * 0.02} y2={my + (B.y - A.y) * 0.02} className="stroke" markerEnd="url(#ring-arrow)" />}
-                  {isCut && <text x={mx} y={my + 5} textAnchor="middle" className="bad-fill" style={{ fontSize: 16, fontWeight: 700 }}>✕</text>}
-                </g>
-              );
-            })}
-            {topo.terminators && (
-              <>
-                <rect x={60} y={168} width={8} height={14} className="node filled" />
-                <rect x={572} y={168} width={8} height={14} className="node filled" />
-              </>
-            )}
-            {topo.nodes.map((n) => {
-              if (n.kind === 'tap') return <circle key={n.id} cx={n.x} cy={n.y} r={3} style={{ fill: 'var(--text)' }} />;
-              const isDead = dead.has(n.id);
-              const w = n.kind === 'infra' ? 74 : 54;
-              return (
-                <g key={n.id} className="hit" onClick={() => toggle(dead, setDead, n.id)} role="button" aria-label={`${n.label || n.id}${isDead ? ' (failed)' : ''}`}>
-                  <rect x={n.x - w / 2} y={n.y - 15} width={w} height={30} className={`node ${n.kind === 'infra' && !isDead ? 'filled' : ''} ${isDead ? 'dead' : ''}`} />
-                  <text
-                    x={n.x}
-                    y={n.y + 5}
-                    textAnchor="middle"
-                    className="mono"
-                    style={{ fontSize: 12, fontWeight: 600, fill: n.kind === 'infra' && !isDead ? 'var(--on-fill)' : isDead ? 'var(--bad)' : 'var(--text)' }}
-                  >
-                    {n.label || n.id}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-        </div>
-        <PanHint />
-        <p className="faint" style={{ fontSize: 13 }}>Click a device to fail it or a link to cut it. {topo.tip}</p>
+      <div className="diagram-scroll">
+        <Diagram topo={topo} dead={dead} cut={cut} onNode={(id) => toggle(dead, setDead, id)} onLink={(i) => toggle(cut, setCut, i)} />
       </div>
-      <div className="section two-col">
-        <div className="stack">
+      <PanHint />
+      <div className="grid-2" style={{ marginTop: 18 }}>
+        <div>
           <h3>{topo.label}</h3>
-          <p className="muted">{topo.about}</p>
+          <p className="muted small" style={{ marginTop: 6 }}>{topo.about}</p>
         </div>
-        <div className="stack">
-          <div>
-            <div className="eyebrow plain ok-text" style={{ color: 'var(--text)' }}>Strengths</div>
-            <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>{topo.pros.map((p) => <li key={p}>{p}</li>)}</ul>
-          </div>
-          <div>
-            <div className="eyebrow plain">Weaknesses</div>
-            <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>{topo.cons.map((p) => <li key={p}>{p}</li>)}</ul>
-          </div>
+        <div className="small stack-sm">
+          {topo.pros.map((p) => <p key={p}><span className="good-text">+</span> {p}</p>)}
+          {topo.cons.map((p) => <p key={p}><span className="bad-text">−</span> {p}</p>)}
         </div>
       </div>
-    </>
+    </div>
+  );
+}
+
+const IDENTIFY = Object.entries(TOPOLOGIES).map(([k, t]) => ({ k, t }));
+
+export function TopologyIdentify() {
+  return (
+    <MatchDrill
+      task="Name the topology from its shape."
+      modes={[
+        {
+          label: 'Diagram → name',
+          items: IDENTIFY,
+          prompt: ({ t }) => <div style={{ maxWidth: 420 }}><Diagram topo={t} label="hide" /></div>,
+          answer: ({ t }) => t.label,
+          note: ({ t }) => t.about,
+        },
+        {
+          label: 'Trait → name',
+          items: IDENTIFY,
+          prompt: ({ t }) => t.cons[0],
+          answer: ({ t }) => t.label,
+          small: true,
+        },
+      ]}
+    />
   );
 }

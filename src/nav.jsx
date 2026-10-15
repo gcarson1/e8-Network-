@@ -1,27 +1,40 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from './components/ui.jsx';
+import { getPref, setPref } from './lib/progress.js';
 
 const NavContext = createContext(null);
 export const useNav = () => useContext(NavContext);
 
+function initialTheme() {
+  const saved = getPref('theme', null);
+  if (saved === 'light' || saved === 'dark') return saved;
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
 /**
  * view: { name: 'home' | 'exam' | 'practice' | 'flashcards' | 'labs', lab?, preset? }
- * A screen with an in-progress session registers a guard message; navigating
- * away then asks for confirmation first.
+ * A screen with a session in progress registers a guard; leaving it asks first.
  */
 export function NavProvider({ children }) {
   const [view, setView] = useState({ name: 'home' });
   const [dataOpen, setDataOpen] = useState(false);
   const [dialog, setDialog] = useState(null);
+  const [theme, setTheme] = useState(initialTheme);
   const guard = useRef(null);
 
-  const confirm = useCallback(
-    (opts) =>
-      new Promise((resolve) => {
-        setDialog({ ...opts, resolve });
-      }),
-    [],
-  );
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((t) => {
+      const next = t === 'dark' ? 'light' : 'dark';
+      setPref('theme', next);
+      return next;
+    });
+  }, []);
+
+  const confirm = useCallback((opts) => new Promise((resolve) => setDialog({ ...opts, resolve })), []);
 
   const go = useCallback(
     async (next) => {
@@ -35,7 +48,7 @@ export function NavProvider({ children }) {
         if (!ok) return;
         guard.current = null;
       }
-      setView(typeof next === 'string' ? { name: next } : next);
+      setView(typeof next === 'string' ? { name: next, stamp: Date.now() } : { stamp: Date.now(), ...next });
       window.scrollTo(0, 0);
     },
     [confirm],
@@ -46,8 +59,13 @@ export function NavProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ view, go, setGuard, confirm, openData: () => setDataOpen(true), closeData: () => setDataOpen(false), dataOpen }),
-    [view, go, setGuard, confirm, dataOpen],
+    () => ({
+      view, go, setGuard, confirm, theme, toggleTheme,
+      openData: () => setDataOpen(true),
+      closeData: () => setDataOpen(false),
+      dataOpen,
+    }),
+    [view, go, setGuard, confirm, theme, toggleTheme, dataOpen],
   );
 
   const close = (result) => {
@@ -60,13 +78,9 @@ export function NavProvider({ children }) {
       {children}
       {dialog && (
         <Modal title={dialog.title} onClose={() => close(false)} labelledBy="confirm-title">
-          {dialog.body && (
-            <div className="section" style={{ paddingTop: 0 }}>
-              <p className="muted">{dialog.body}</p>
-            </div>
-          )}
-          <div className="section row" style={{ justifyContent: 'flex-end' }}>
-            <button className="btn quiet" onClick={() => close(false)}>
+          {dialog.body && <p className="muted">{dialog.body}</p>}
+          <div className="modal-foot">
+            <button className="tbtn" onClick={() => close(false)}>
               {dialog.cancelLabel || 'Cancel'}
             </button>
             <button className="btn primary" onClick={() => close(true)} autoFocus>

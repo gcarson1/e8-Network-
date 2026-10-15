@@ -22,11 +22,10 @@ export default function DataDialog() {
   };
 
   const doCopy = async () => {
-    const ok = await copyText(json());
-    if (ok) {
+    if (await copyText(json())) {
       markExported();
-      notify('Progress copied. Paste it into a note or message to keep it.');
-    } else setError("Couldn't access the clipboard in this browser. Use Download instead.");
+      notify('Copied. Paste it into a note to keep it.');
+    } else setError("This browser blocked the clipboard. Use Download instead.");
   };
 
   const applyImport = async (raw) => {
@@ -36,13 +35,13 @@ export default function DataDialog() {
       if (count > 0) {
         const ok = await confirm({
           title: 'Replace current progress?',
-          body: `Importing replaces the ${count} items tracked in this session with ${Object.keys(incoming).length} from the file.`,
+          body: `This replaces the ${count} items tracked now with ${Object.keys(incoming).length} from the file.`,
           confirmLabel: 'Replace',
         });
         if (!ok) return;
       }
       replaceItems(incoming, 'import');
-      notify(`Imported progress for ${Object.keys(incoming).length} items`);
+      notify(`Loaded progress for ${Object.keys(incoming).length} items`);
       closeData();
     } catch (e) {
       setError(e.message);
@@ -60,11 +59,7 @@ export default function DataDialog() {
   };
 
   const doReset = async () => {
-    const ok = await confirm({
-      title: 'Reset all progress?',
-      body: 'This clears every mastery stat in this session. Export first if you want to keep a copy.',
-      confirmLabel: 'Reset',
-    });
+    const ok = await confirm({ title: 'Reset all progress?', body: 'Every mastery stat goes back to zero.', confirmLabel: 'Reset' });
     if (!ok) return;
     replaceItems({}, 'reset');
     clearBackup();
@@ -73,65 +68,39 @@ export default function DataDialog() {
 
   return (
     <Modal title="Progress file" onClose={closeData} labelledBy="data-title">
-      <div className="section" style={{ paddingTop: 0 }}>
-        <p className="muted" style={{ fontSize: 14 }}>
-          This app doesn't save anything on its own. Your mastery stats live in a small <span className="mono">.json</span> file:
-          export it when you're done, then import it next time (on any device).
-        </p>
-      </div>
+      <p className="muted small">Nothing saves automatically. Download your file when you finish, and load it next time on any device.</p>
 
-      <div className="section stack">
+      <div className="modal-sec stack">
         <Eyebrow>Save</Eyebrow>
-        <p style={{ fontSize: 14 }}>
-          {count ? `${count} items tracked · ${overall.pct}% overall mastery` : 'Nothing tracked yet.'}
+        <p className="small">
+          {count ? `${count} items · ${overall.pct}% mastery` : 'Nothing to save yet.'}
           {dirty && <span className="muted"> · unsaved changes</span>}
         </p>
-        <div className="row">
-          <button className="btn primary" onClick={doExport} disabled={!count}>
-            Download .json
-          </button>
-          <button className="btn quiet" onClick={doCopy} disabled={!count}>
-            Copy as text
-          </button>
+        <div className="hstack">
+          <button className="btn primary" onClick={doExport} disabled={!count}>Download .json</button>
+          <button className="tbtn" onClick={doCopy} disabled={!count}>Copy as text</button>
         </div>
-        <p className="faint" style={{ fontSize: 12.5 }}>
-          On a phone or inside Slack, if the download doesn't work, use Copy as text and paste it into a note to yourself.
-        </p>
       </div>
 
-      <div className="section stack">
-        <Eyebrow>Restore</Eyebrow>
-        <div className="row">
-          <button className="btn" onClick={() => fileRef.current?.click()}>
-            Choose file…
-          </button>
-          <button className="btn link" onClick={() => setPaste((p) => !p)}>
-            {paste ? 'Hide paste box' : 'Paste text instead'}
-          </button>
+      <div className="modal-sec stack">
+        <Eyebrow>Load</Eyebrow>
+        <div className="hstack">
+          <button className="btn" onClick={() => fileRef.current?.click()}>Choose file…</button>
+          <button className="tbtn" onClick={() => setPaste((p) => !p)}>{paste ? 'Hide paste box' : 'Paste text'}</button>
           <input ref={fileRef} type="file" accept=".json,application/json,text/plain" hidden onChange={onFile} />
         </div>
         {paste && (
           <>
-            <textarea
-              className="input"
-              placeholder='{"app": "netplus-study", ...}'
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              aria-label="Paste progress JSON"
-            />
-            <button className="btn" onClick={() => applyImport(text)} disabled={!text.trim()}>
-              Import pasted text
-            </button>
+            <textarea className="input" placeholder='{"app": "netplus-study", …}' value={text} onChange={(e) => setText(e.target.value)} aria-label="Paste progress JSON" />
+            <button className="btn" onClick={() => applyImport(text)} disabled={!text.trim()}>Load pasted text</button>
           </>
         )}
-        {error && <p className="bad-text" style={{ fontSize: 14 }}>{error}</p>}
+        {error && <p className="bad-text small">{error}</p>}
       </div>
 
-      <div className="section row between">
-        <span className="faint" style={{ fontSize: 13 }}>Start over from zero</span>
-        <button className="btn link" onClick={doReset} disabled={!count}>
-          Reset progress
-        </button>
+      <div className="modal-foot" style={{ justifyContent: 'space-between' }}>
+        <span className="faint small">Phone or Slack? Copy as text works when downloads don't.</span>
+        <button className="tbtn" onClick={doReset} disabled={!count}>Reset</button>
       </div>
     </Modal>
   );

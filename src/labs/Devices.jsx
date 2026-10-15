@@ -1,4 +1,6 @@
-import { MatchDrill, TabbedLab } from './kit.jsx';
+import { useState } from 'react';
+import { MatchDrill, PanHint, Task } from './kit.jsx';
+import { shuffle } from '../lib/util.js';
 
 const S = { fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'square' };
 
@@ -117,59 +119,184 @@ const Icon = ({ name, size = 54 }) => (
 
 const withLayer = DEVICES.filter((d) => /^Layer/.test(d.layer));
 
-function Reference() {
+export function DevicesReference() {
   return (
-    <div className="section">
-      <div className="table-wrap">
-        <table className="table">
-          <thead><tr><th /><th>Device</th><th>Layer</th><th>What it does</th></tr></thead>
-          <tbody>
-            {DEVICES.map((d) => (
-              <tr key={d.name}>
-                <td style={{ width: 52 }}><Icon name={d.name} size={36} /></td>
-                <td style={{ fontWeight: 600 }}>{d.name}</td>
-                <td className="mono" style={{ whiteSpace: 'nowrap' }}>{d.layer}</td>
-                <td className="muted">{d.fn}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="scroll-x">
+      <table className="table">
+        <thead><tr><th /><th>Device</th><th>Layer</th><th>Job</th></tr></thead>
+        <tbody>
+          {DEVICES.map((d) => (
+            <tr key={d.name}>
+              <td style={{ width: 48 }}><Icon name={d.name} size={34} /></td>
+              <td><b>{d.name}</b></td>
+              <td className="mono">{d.layer}</td>
+              <td className="muted">{d.fn}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
 
-export default function Devices() {
+export const DevicesDrill = () => (
+  <MatchDrill
+    task="Match each device to its job or OSI layer."
+    modes={[
+      {
+        label: 'Device → job',
+        items: DEVICES,
+        prompt: (d) => <span className="hstack" style={{ gap: 16 }}><Icon name={d.name} />{d.name}</span>,
+        answer: (d) => d.fn,
+        note: (d) => `${d.name} · ${d.layer}`,
+      },
+      { label: 'Job → device', items: DEVICES, prompt: (d) => d.fn, answer: (d) => d.name, small: true },
+      {
+        label: 'Device → layer',
+        items: withLayer,
+        prompt: (d) => <span className="hstack" style={{ gap: 16 }}><Icon name={d.name} />{d.name}</span>,
+        answer: (d) => d.layer,
+        note: (d) => d.fn,
+      },
+    ]}
+  />
+);
+
+// ───────── Build the network ─────────
+const SLOTS = [
+  { id: 'rtr', device: 'Router', x: 320, y: 96, hint: 'Connects you to the ISP' },
+  { id: 'fw', device: 'Firewall', x: 320, y: 168, hint: 'Filters traffic by rules' },
+  { id: 'lb', device: 'Load balancer', x: 530, y: 168, hint: 'Spreads requests over web servers' },
+  { id: 'ips', device: 'IPS', x: 320, y: 240, hint: 'Inline, blocks attacks it detects' },
+  { id: 'sw', device: 'Switch', x: 320, y: 312, hint: 'Connects wired devices by MAC' },
+  { id: 'ap', device: 'Wireless access point', x: 180, y: 396, hint: 'Puts laptops on the LAN over Wi-Fi' },
+  { id: 'wlc', device: 'Wireless LAN controller', x: 460, y: 396, hint: 'Manages all the APs centrally' },
+];
+const DISTRACTORS = ['Hub', 'Modem', 'Proxy server'];
+const SHORT = { 'Wireless access point': 'Access point', 'Wireless LAN controller': 'WLC' };
+
+/** Split a hint into lines of about 20 characters for the slot boxes. */
+function wrap(text, max = 20) {
+  const lines = [''];
+  for (const w of text.split(' ')) {
+    const cur = lines[lines.length - 1];
+    if (cur && (cur + ' ' + w).length > max) lines.push(w);
+    else lines[lines.length - 1] = cur ? `${cur} ${w}` : w;
+  }
+  return lines;
+}
+
+export function BuildNetwork() {
+  const [palette, setPalette] = useState(() => shuffle([...SLOTS.map((s) => s.device), ...DISTRACTORS]));
+  const [armed, setArmed] = useState(null);
+  const [placed, setPlaced] = useState({}); // slot id -> device
+  const [hints, setHints] = useState(true);
+  const [checked, setChecked] = useState(false);
+
+  const used = new Set(Object.values(placed));
+  const drop = (slot) => {
+    if (checked) return;
+    if (placed[slot.id] && !armed) {
+      setPlaced((p) => { const n = { ...p }; delete n[slot.id]; return n; });
+      return;
+    }
+    if (!armed) return;
+    setPlaced((p) => {
+      const n = Object.fromEntries(Object.entries(p).filter(([, d]) => d !== armed));
+      n[slot.id] = armed;
+      return n;
+    });
+    setArmed(null);
+  };
+  const right = SLOTS.filter((s) => placed[s.id] === s.device).length;
+  const full = SLOTS.every((s) => placed[s.id]);
+  const reset = () => {
+    setPalette(shuffle([...SLOTS.map((s) => s.device), ...DISTRACTORS]));
+    setPlaced({});
+    setArmed(null);
+    setChecked(false);
+  };
+
+  const box = (s) => {
+    const d = placed[s.id];
+    const state = checked ? (d === s.device ? 'goodn' : 'badn') : '';
+    return (
+      <g key={s.id} className="hit" onClick={() => drop(s)} role="button" aria-label={`Slot: ${s.hint}${d ? `, holds ${d}` : ', empty'}`}>
+        <rect x={s.x - 66} y={s.y - 22} width={132} height={44} className={`node ${d ? '' : 'soft'} ${state}`} style={!d ? { strokeDasharray: '5 4' } : undefined} />
+        {d ? (
+          <>
+            <g transform={`translate(${s.x - 60}, ${s.y - 16}) scale(0.5)`} style={{ color: 'var(--text)' }}>{ICON[d]}</g>
+            <text x={s.x - 22} y={s.y + 5} style={{ fontSize: 12.5, fontWeight: 600 }}>{SHORT[d] || d}</text>
+          </>
+        ) : hints ? (
+          <text x={s.x} y={s.y - (wrap(s.hint).length - 1) * 6.5 + 4} textAnchor="middle" className="muted" style={{ fontSize: 10.5 }}>
+            {wrap(s.hint).map((line, k) => <tspan key={k} x={s.x} dy={k ? 13 : 0}>{line}</tspan>)}
+          </text>
+        ) : (
+          <text x={s.x} y={s.y + 6} textAnchor="middle" className="faint" style={{ fontSize: 18, fontWeight: 600 }}>?</text>
+        )}
+        {checked && d !== s.device && (
+          <text x={s.x} y={s.y + 36} textAnchor="middle" className="halo" style={{ fontSize: 11, fontWeight: 600, fill: 'var(--bad)' }}>Should be: {SHORT[s.device] || s.device}</text>
+        )}
+      </g>
+    );
+  };
+  const end = (x, y, label) => (
+    <g key={label}>
+      <rect x={x - 40} y={y - 15} width={80} height={30} className="node" />
+      <text x={x} y={y + 5} textAnchor="middle" style={{ fontSize: 12 }}>{label}</text>
+    </g>
+  );
+
   return (
-    <TabbedLab
-      tabs={[
-        {
-          value: 'drill',
-          label: 'Drill',
-          render: () => (
-            <MatchDrill
-              modes={[
-                {
-                  label: 'Device → job',
-                  items: DEVICES,
-                  prompt: (d) => <span className="row" style={{ gap: 16 }}><Icon name={d.name} />{d.name}</span>,
-                  answer: (d) => d.fn,
-                  note: (d) => `${d.name} · ${d.layer}`,
-                },
-                { label: 'Job → device', items: DEVICES, prompt: (d) => d.fn, answer: (d) => d.name, small: true },
-                {
-                  label: 'Device → OSI layer',
-                  items: withLayer,
-                  prompt: (d) => <span className="row" style={{ gap: 16 }}><Icon name={d.name} />{d.name}</span>,
-                  answer: (d) => d.layer,
-                  note: (d) => d.fn,
-                },
-              ]}
-            />
-          ),
-        },
-        { value: 'ref', label: 'Reference', render: () => <Reference /> },
-      ]}
-    />
+    <div>
+      <div className="spread" style={{ marginBottom: 6, alignItems: 'baseline' }}>
+        <Task>Pick a device, then tap the slot where it belongs. Three devices are decoys.</Task>
+        <button className={`tbtn ${hints ? 'on' : ''}`} onClick={() => setHints((h) => !h)} aria-pressed={hints} style={{ marginRight: -8 }}>
+          {hints ? 'Hints on' : 'Hints off'}
+        </button>
+      </div>
+      <div className="pool" style={{ marginBottom: 14 }}>
+        {palette.map((d) => (
+          <button key={d} className={`chipbtn wirebtn ${used.has(d) ? 'placed' : ''}`} aria-pressed={armed === d} onClick={() => !checked && setArmed(armed === d ? null : d)}>
+            <Icon name={d} size={20} />
+            {SHORT[d] || d}
+          </button>
+        ))}
+      </div>
+      <div className="diagram-scroll">
+        <svg className="diagram" viewBox="0 0 640 440" role="img" aria-label="Network diagram with empty device slots">
+          <ellipse cx={320} cy={30} rx={70} ry={22} className="node soft" />
+          <text x={320} y={35} textAnchor="middle" style={{ fontSize: 13, fontWeight: 600 }}>Internet</text>
+          {[[320, 52, 320, 74], [320, 118, 320, 146], [386, 168, 464, 168], [320, 190, 320, 218], [320, 262, 320, 290], [320, 334, 180, 374], [320, 334, 460, 374], [320, 334, 320, 380], [530, 190, 490, 236], [530, 190, 570, 236]].map(([x1, y1, x2, y2], i) => (
+            <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} className="wire" strokeWidth="1.5" />
+          ))}
+          {end(490, 250, 'Web 1')}
+          {end(570, 250, 'Web 2')}
+          {end(320, 395, 'PCs')}
+          <text x={530} y={128} textAnchor="middle" className="faint" style={{ fontSize: 11, letterSpacing: '0.06em' }}>SCREENED SUBNET</text>
+          {SLOTS.map(box)}
+        </svg>
+      </div>
+      <PanHint />
+      {checked && (
+        <div className={`follow ${right === SLOTS.length ? 'good' : 'bad'}`}>
+          <div className="follow-k">{right}/{SLOTS.length} placed correctly</div>
+          <p className="rest">
+            {right === SLOTS.length
+              ? 'Traffic from the internet hits the router, is filtered by the firewall, inspected by the IPS, then switched to hosts. Public servers sit behind the load balancer in the screened subnet.'
+              : 'The correct device is shown next to each wrong slot.'}
+          </p>
+        </div>
+      )}
+      <div className="qactions">
+        {!checked ? (
+          <button className="btn primary" disabled={!full} onClick={() => setChecked(true)}>Check</button>
+        ) : (
+          <button className="btn primary" onClick={reset}>Try again</button>
+        )}
+        <span className="tally">{Object.keys(placed).length}/{SLOTS.length} slots filled</span>
+      </div>
+    </div>
   );
 }

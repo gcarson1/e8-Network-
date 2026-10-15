@@ -11,9 +11,9 @@ A single, self-contained HTML file for CompTIA Network+ (N10-009) study: a timed
 | Simulated exam | 90 questions / 90 minutes by default (also 45 and 20), drawn by official domain weighting. Timer always visible, flag and jump around, no feedback until you submit. Results show the score, a linear scaled-score estimate, a per-domain breakdown and a review of every question. |
 | Practice | Pick domains and a focus (mixed, weakest first, new only, missed). Instant right/wrong plus the full explanation. |
 | Flashcards | Question-bank cards plus 80 built-in key terms. "Got it" and "Still learning" feed the same mastery stats. Smart Deck puts your weakest domains first. |
-| Labs | Subnetting trainer, CIDR slider, OSI stack builder, port drill, TCP handshake animator, topology visualizer, cables & connectors, network devices, IPv4 vs IPv6, routing table builder, VLAN segmentation, wireless standards, DHCP & DNS, attacks & defenses, troubleshooting. |
+| Labs | 14 topics, 41 hands-on activities in PBQ style: subnet calculator, VLSM planner, encapsulation walkthrough, firewall rule sets, RJ45 wiring (T568A/B), build-a-network placement, Wi-Fi channel planning, static routing, VLAN segmentation, TCP/DHCP/DNS sequences with predict-the-next-step, and diagnosis from real command output and security logs. Plus drills and references. |
 
-During an exam, practice set or deck, the sidebar shows a live bubble grid (one square per question). Otherwise it shows the category mastery panel.
+During an exam, practice set or deck, the nav bar is replaced by a focus bar (timer, progress, Submit/Finish), and the side panel shows a live bubble grid with one square per question. Otherwise the side panel shows mastery by domain. Click a domain there to practice it.
 
 ## Saving progress
 
@@ -56,7 +56,8 @@ Keep `id` values stable when you edit the CSV, because progress files are keyed 
 network_plus_question_bank.csv   source questions
 src/lib/          CSV parsing, bank normalization, mastery math, progress file, IP math
 src/modes/        Home, Exam, Practice, Flashcards, Labs screens
-src/labs/         the 15 interactive labs (+ kit.jsx: drills, ordering, sequence animator)
+src/labs/         lab activities (+ kit.jsx: drills, ordering, sequence animator, case runner)
+src/labs/index.js lab registry: topics, activities, domains
 src/data/terms.js built-in key-terms flashcard deck
 src/styles.css    design system (monochrome; red/green only for right/wrong)
 ```

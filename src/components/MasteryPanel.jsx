@@ -1,53 +1,64 @@
 import { useStudy } from '../state.jsx';
 import { domainFor } from '../lib/bank.js';
-import { Bar, Eyebrow } from './ui.jsx';
+import { Eyebrow, Meter } from './ui.jsx';
 import { useNav } from '../nav.jsx';
+import { relativeTime } from '../lib/util.js';
 
 export default function MasteryPanel() {
   const { categories, stats, overall, dirty, lastSaved } = useStudy();
-  const { openData } = useNav();
-  const fresh = overall.seen === 0 && Object.values(stats).every((s) => s.pct === 0);
+  const { openData, go } = useNav();
+  const fresh = overall.seen === 0;
 
   return (
-    <aside className="panel side" aria-label="Category mastery">
-      <div className="mastery-head">
+    <aside className="side" aria-label="Mastery by domain">
+      <div className="side-sec">
         <Eyebrow>Mastery</Eyebrow>
-        <div className="mastery-total">
+        <div className="hstack" style={{ marginTop: 10, alignItems: 'baseline' }}>
           <span className="big">{overall.pct}%</span>
-          <span className="muted" style={{ fontSize: 13 }}>
-            overall · {overall.seen}/{overall.total} questions seen
+          <span className="muted small">
+            {overall.seen}/{overall.total} questions seen
           </span>
         </div>
       </div>
-      {categories.map((c) => {
-        const s = stats[c];
-        const d = domainFor(c);
-        return (
-          <div className="mastery-row" key={c}>
-            <div className="top">
-              <span className="name">{c}</span>
-              <span className="pct">{s.pct}%</span>
-            </div>
-            <Bar pct={s.pct} label={`${c} mastery`} />
-            <div className="sub">
-              {s.seen}/{s.total} seen · {s.mastered} mastered{d ? ` · ${d.weight}% of exam` : ''}
-            </div>
-          </div>
-        );
-      })}
-      <div className="mastery-foot stack">
-        <p className="muted" style={{ fontSize: 13 }}>
-          {fresh
-            ? 'Starting fresh. Import a progress file to restore your stats.'
+      <div className="side-sec flush">
+        {categories.map((c) => {
+          const s = stats[c];
+          const d = domainFor(c);
+          return (
+            <button
+              key={c}
+              className="mrow"
+              onClick={() => go({ name: 'practice', preset: { categories: [c], focus: 'weak' } })}
+              title={`Practice ${c}`}
+            >
+              <span className="mrow-top">
+                <span>{d?.short || c}</span>
+                <span className="pct">{s.pct}%</span>
+              </span>
+              <Meter pct={s.pct} label={`${c} mastery`} />
+              <span className="mrow-sub">
+                {s.seen}/{s.total} seen{d ? ` · ${d.weight}% of exam` : ''}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <div className="side-sec stack-sm">
+        <Eyebrow>Progress file</Eyebrow>
+        <p className="small muted">
+          {fresh && !lastSaved
+            ? 'Nothing loaded. Import yours to restore your stats.'
             : dirty
-              ? 'You have unsaved progress. Export it to keep it.'
+              ? 'Unsaved changes. Save before you close this tab.'
               : lastSaved
-                ? `Progress ${lastSaved.kind === 'export' ? 'exported' : 'imported'}. Nothing new to save.`
-                : 'Progress loaded.'}
+                ? `${lastSaved.kind === 'export' ? 'Saved' : 'Loaded'} ${relativeTime(lastSaved.at)}.`
+                : 'Up to date.'}
         </p>
-        <button className={`btn small block ${dirty ? '' : 'quiet'}`} onClick={openData}>
-          {fresh ? 'Import progress file' : dirty ? 'Export progress' : 'Progress file'}
-        </button>
+        <div>
+          <button className={`btn ${dirty ? 'primary' : ''}`} style={{ marginTop: 6 }} onClick={openData}>
+            {fresh && !lastSaved ? 'Import file' : dirty ? 'Save progress' : 'Open'}
+          </button>
+        </div>
       </div>
     </aside>
   );

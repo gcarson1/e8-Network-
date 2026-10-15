@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { PanHint } from './kit.jsx';
 import { intToIp, ipToInt, parseCidrOrMask, prefixToMask } from '../lib/net.js';
+import { PanHint, Task } from './kit.jsx';
 
 const CONNECTED = [
   { code: 'C', net: '192.168.1.0', prefix: 24, via: 'G0/0', ad: 0 },
@@ -84,142 +84,117 @@ export default function Routing() {
   ];
 
   const on = (id) => path.links.includes(id);
-  const L = ({ id, x1, y1, x2, y2 }) => <line x1={x1} y1={y1} x2={x2} y2={y2} className={`link ${on(id) ? 'path' : ''}`} />;
-  const Box = ({ x, y, w = 110, label, sub, filled, bad }) => (
+  const L = ({ id, x1, y1, x2, y2 }) => <line x1={x1} y1={y1} x2={x2} y2={y2} className={`wire ${on(id) ? 'path' : ''}`} />;
+  const Box = ({ x, y, w = 110, label, sub, ink, bad }) => (
     <g>
-      <rect x={x - w / 2} y={y - 20} width={w} height={40} className={`node ${filled ? 'filled' : ''} ${bad ? 'dead' : ''}`} />
-      <text x={x} y={sub ? y - 3 : y + 5} textAnchor="middle" style={{ fontSize: 13, fontWeight: 650, fill: filled ? 'var(--on-fill)' : 'var(--text)' }}>{label}</text>
-      {sub && <text x={x} y={y + 13} textAnchor="middle" className="mono" style={{ fontSize: 10, fill: filled ? 'var(--on-fill)' : 'var(--muted)' }}>{sub}</text>}
+      <rect x={x - w / 2} y={y - 20} width={w} height={40} className={`node ${ink && !bad ? 'ink' : ''} ${bad ? 'dead' : ''}`} />
+      <text x={x} y={sub ? y - 3 : y + 5} textAnchor="middle" style={{ fontSize: 13, fontWeight: 600, fill: ink && !bad ? 'var(--ink-text)' : bad ? 'var(--bad)' : 'var(--text)' }}>{label}</text>
+      {sub && <text x={x} y={y + 13} textAnchor="middle" className="mono" style={{ fontSize: 10, fill: 'var(--muted)' }}>{sub}</text>}
     </g>
   );
+  const done = missions.filter((m) => m[1]).length;
 
   return (
-    <>
-      <div className="section stack">
-        <p className="muted">
-          You're configuring <b>R1</b>. It already knows its directly connected networks. Add static routes so it can reach the networks behind R2 and the internet,
-          then send test packets and watch longest-prefix match pick the route.
-        </p>
-        <div className="diagram-scroll">
-          <svg className="diagram" viewBox="0 0 640 250" role="img" aria-label="Network diagram: LAN A, R1, R2 with LAN B and C, ISP">
-            <L id="A-R1" x1={75} y1={130} x2={250} y2={130} />
-            <L id="R1-R2" x1={250} y1={130} x2={430} y2={60} />
-            <L id="R1-ISP" x1={250} y1={130} x2={430} y2={200} />
-            <L id="R2-B" x1={430} y1={60} x2={570} y2={30} />
-            <L id="R2-C" x1={430} y1={60} x2={570} y2={95} />
-            <L id="ISP-NET" x1={430} y1={200} x2={570} y2={200} />
-            <Box x={75} y={130} w={130} label="LAN A" sub="192.168.1.0/24" />
-            <Box x={250} y={130} w={84} label="R1" filled bad={path.outcome === 'drop'} />
-            <Box x={430} y={60} w={84} label="R2" filled bad={path.outcome === 'stuck' && path.links[path.links.length - 1] === 'R1-R2'} />
-            <Box x={430} y={200} w={84} label="ISP" filled bad={path.outcome === 'stuck' && path.links[path.links.length - 1] === 'R1-ISP'} />
-            <Box x={570} y={30} w={130} label="LAN B" sub="192.168.2.0/24" />
-            <Box x={570} y={95} w={130} label="LAN C" sub="192.168.3.0/24" />
-            <Box x={570} y={200} w={130} label="Internet" sub="0.0.0.0/0" />
-            <text x={175} y={120} textAnchor="middle" className="mono muted" style={{ fontSize: 10 }}>G0/0</text>
-            <text x={318} y={84} textAnchor="middle" className="mono muted" style={{ fontSize: 10 }}>10.0.12.0/30</text>
-            <text x={318} y={186} textAnchor="middle" className="mono muted" style={{ fontSize: 10 }}>203.0.113.0/30</text>
-          </svg>
-        </div>
-        <PanHint />
+    <div>
+      <Task>You're configuring <b>R1</b>. Add static routes until every goal is checked, then send test packets to see longest-prefix match at work.</Task>
+      <div className="checklist">
+        {missions.map(([m, ok]) => (
+          <div key={m} className={ok ? 'done' : ''}>
+            <span className="mk">{ok ? '✓' : '○'}</span>
+            <span>{m}</span>
+          </div>
+        ))}
+      </div>
+      <p className="faint small" style={{ marginTop: 6 }}>{done}/{missions.length} done{done < missions.length ? ' · hint for the bonus: 192.168.2.0 and 192.168.3.0 share their first 23 bits' : ''}</p>
+
+      <div className="diagram-scroll" style={{ marginTop: 18 }}>
+        <svg className="diagram" viewBox="0 0 640 240" role="img" aria-label="LAN A, R1, R2 with LAN B and C, and the ISP">
+          <L id="A-R1" x1={75} y1={125} x2={250} y2={125} />
+          <L id="R1-R2" x1={250} y1={125} x2={430} y2={55} />
+          <L id="R1-ISP" x1={250} y1={125} x2={430} y2={195} />
+          <L id="R2-B" x1={430} y1={55} x2={570} y2={25} />
+          <L id="R2-C" x1={430} y1={55} x2={570} y2={90} />
+          <L id="ISP-NET" x1={430} y1={195} x2={570} y2={195} />
+          <Box x={75} y={125} w={130} label="LAN A" sub="192.168.1.0/24" />
+          <Box x={250} y={125} w={84} label="R1" ink bad={path.outcome === 'drop'} />
+          <Box x={430} y={55} w={84} label="R2" ink bad={path.outcome === 'stuck' && path.links[path.links.length - 1] === 'R1-R2'} />
+          <Box x={430} y={195} w={84} label="ISP" ink bad={path.outcome === 'stuck' && path.links[path.links.length - 1] === 'R1-ISP'} />
+          <Box x={570} y={25} w={130} label="LAN B" sub="192.168.2.0/24" />
+          <Box x={570} y={90} w={130} label="LAN C" sub="192.168.3.0/24" />
+          <Box x={570} y={195} w={130} label="Internet" sub="anything else" />
+          <text x={175} y={116} textAnchor="middle" className="mono muted" style={{ fontSize: 10 }}>G0/0</text>
+          <text x={318} y={80} textAnchor="middle" className="mono muted halo" style={{ fontSize: 10 }}>G0/1 · 10.0.12.0/30</text>
+          <text x={318} y={182} textAnchor="middle" className="mono muted halo" style={{ fontSize: 10 }}>G0/2 · 203.0.113.0/30</text>
+        </svg>
+      </div>
+      <PanHint />
+
+      <div className="eyebrow" style={{ margin: '24px 0 8px' }}>R1 routing table</div>
+      <div className="scroll-x">
+        <table className="table">
+          <thead><tr><th>Code</th><th>Destination</th><th>Via</th><th>AD</th><th /></tr></thead>
+          <tbody>
+            {routes.map((r) => {
+              const isBest = result?.best === r;
+              const isMatch = result?.matches.includes(r);
+              return (
+                <tr key={`${r.net}/${r.prefix}`} className={isBest ? 'hit' : isMatch ? 'sel' : ''}>
+                  <td className="mono">{r.code}</td>
+                  <td className="mono">{r.net}/{r.prefix}</td>
+                  <td className="mono">{r.code === 'C' ? `connected, ${r.via}` : r.via}</td>
+                  <td className="mono">{r.ad}</td>
+                  <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    {isBest && <span className="pill good">used</span>}
+                    {!isBest && isMatch && <span className="pill">matches</span>}
+                    {r.code !== 'C' && <button className="tbtn small" onClick={() => setStatics((x) => x.filter((y) => y !== r))} aria-label={`Remove ${r.net}/${r.prefix}`}>Remove</button>}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
 
-      <div className="section stack">
-        <div className="eyebrow">R1 routing table</div>
-        <div className="table-wrap">
-          <table className="table">
-            <thead><tr><th>Code</th><th>Destination</th><th>Next hop / exit</th><th>AD</th><th /></tr></thead>
-            <tbody>
-              {routes.map((r, i) => {
-                const isBest = result?.best === r;
-                const isMatch = result?.matches.includes(r);
-                return (
-                  <tr key={`${r.net}/${r.prefix}`} className={isBest ? 'match' : isMatch ? 'sel' : ''}>
-                    <td className="mono">{r.code}</td>
-                    <td className="mono">{r.net}/{r.prefix}</td>
-                    <td className="mono">{r.code === 'C' ? `directly connected, ${r.via}` : r.via}</td>
-                    <td className="mono">{r.ad}</td>
-                    <td style={{ textAlign: 'right' }}>
-                      {isBest && <span className="pill ok" style={{ marginRight: 8 }}>chosen</span>}
-                      {!isBest && isMatch && <span className="pill" style={{ marginRight: 8 }}>matches</span>}
-                      {r.code !== 'C' && (
-                        <button className="btn link small" onClick={() => setStatics((s) => s.filter((x) => x !== r))} aria-label={`Remove route ${r.net}/${r.prefix}`}>
-                          Remove
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        <form onSubmit={add} className="answer-grid" style={{ alignItems: 'end' }}>
-          <div>
-            <label htmlFor="rt-net">Destination network</label>
-            <input id="rt-net" className="input" value={form.net} onChange={(e) => setForm({ ...form, net: e.target.value })} placeholder="192.168.2.0" inputMode="decimal" spellCheck={false} />
-          </div>
-          <div>
-            <label htmlFor="rt-prefix">Prefix or mask</label>
-            <input id="rt-prefix" className="input" value={form.prefix} onChange={(e) => setForm({ ...form, prefix: e.target.value })} placeholder="/24" spellCheck={false} />
-          </div>
-          <div>
-            <label htmlFor="rt-via">Next hop</label>
-            <select id="rt-via" className="input" value={form.via} onChange={(e) => setForm({ ...form, via: e.target.value })}>
-              {NEXT_HOPS.map((h) => <option key={h.ip} value={h.ip}>{h.label}</option>)}
-            </select>
-          </div>
-          <div>
-            <button className="btn primary block" type="submit">Add static route</button>
-          </div>
-        </form>
-        {err && <p className="bad-text" style={{ fontSize: 14 }}>{err}</p>}
-        <p className="faint mono" style={{ fontSize: 12 }}>Cisco equivalent: ip route {form.net || '<network>'} {form.prefix ? (parseCidrOrMask(form.prefix) != null ? intToIp(prefixToMask(parseCidrOrMask(form.prefix))) : '<mask>') : '<mask>'} {form.via}</p>
-      </div>
+      <form onSubmit={add} className="grid-fields" style={{ marginTop: 16, alignItems: 'end' }}>
+        <label className="lf"><span>Destination network</span><input className="input" value={form.net} onChange={(e) => setForm({ ...form, net: e.target.value })} placeholder="192.168.2.0" inputMode="decimal" spellCheck={false} /></label>
+        <label className="lf"><span>Prefix or mask</span><input className="input" value={form.prefix} onChange={(e) => setForm({ ...form, prefix: e.target.value })} placeholder="/24" spellCheck={false} /></label>
+        <label className="lf"><span>Next hop</span>
+          <select className="input" value={form.via} onChange={(e) => setForm({ ...form, via: e.target.value })}>
+            {NEXT_HOPS.map((h) => <option key={h.ip} value={h.ip}>{h.label}</option>)}
+          </select>
+        </label>
+        <div><button className="btn primary" type="submit">Add route</button></div>
+      </form>
+      {err && <p className="bad-text small" style={{ marginTop: 8 }}>{err}</p>}
+      <p className="faint small mono" style={{ marginTop: 8 }}>
+        ip route {form.net || '<network>'} {parseCidrOrMask(form.prefix) != null ? intToIp(prefixToMask(parseCidrOrMask(form.prefix))) : '<mask>'} {form.via}
+      </p>
 
-      <div className="section stack">
-        <div className="eyebrow">Send a test packet</div>
-        <div className="row">
-          <input className={`input ${result ? '' : 'bad'}`} style={{ maxWidth: 220 }} value={dest} onChange={(e) => setDest(e.target.value)} aria-label="Destination IP" inputMode="decimal" spellCheck={false} />
-          {QUICK.map(([l, ip]) => (
-            <button key={ip} className={`btn small ${dest === ip ? 'primary' : 'quiet'}`} onClick={() => setDest(ip)}>{l}</button>
-          ))}
+      <div className="eyebrow" style={{ margin: '26px 0 8px' }}>Send a test packet</div>
+      <div className="hstack">
+        <input className={`input ${result ? '' : 'bad'}`} style={{ maxWidth: 200 }} value={dest} onChange={(e) => setDest(e.target.value)} aria-label="Destination IP" inputMode="decimal" spellCheck={false} />
+        <div className="toggles">
+          {QUICK.map(([l, ip]) => <button key={ip} className="toggle" aria-pressed={dest === ip} onClick={() => setDest(ip)}>{l}</button>)}
         </div>
-        {result && (
-          <div className={`callout ${path.outcome === 'delivered' ? 'ok' : 'bad'}`} aria-live="polite">
-            {result.best ? (
-              <>
-                <p style={{ fontWeight: 650 }} className={path.outcome === 'delivered' ? 'ok-text' : 'bad-text'}>
-                  {path.outcome === 'delivered' ? `Delivered to ${path.where}.` : `Forwarded, but it reaches ${path.where}.`}
-                </p>
-                <p className="muted" style={{ marginTop: 4 }}>
-                  {result.matches.length} route{result.matches.length === 1 ? '' : 's'} matched {intToIp(result.ip)}.
-                  {result.matches.length > 1 && ` The longest prefix (/${result.best.prefix}) wins over ${result.matches.slice(1).map((m) => `/${m.prefix}`).join(', ')}.`}
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="bad-text" style={{ fontWeight: 650 }}>Dropped at R1: no matching route.</p>
-                <p className="muted" style={{ marginTop: 4 }}>R1 discards the packet and sends ICMP "destination unreachable" back. A default route (0.0.0.0/0) would catch it.</p>
-              </>
-            )}
-          </div>
-        )}
       </div>
-
-      <div className="section stack">
-        <div className="eyebrow">Missions</div>
-        <div>
-          {missions.map(([m, ok]) => (
-            <div key={m} className="row" style={{ borderTop: '1px solid var(--line)', padding: '10px 0', flexWrap: 'nowrap' }}>
-              <span className={`mono ${ok ? 'ok-text' : 'faint'}`} style={{ width: 20 }}>{ok ? '✓' : '○'}</span>
-              <span className={ok ? '' : 'muted'}>{m}</span>
-            </div>
-          ))}
+      {result && (
+        <div className={`follow ${path.outcome === 'delivered' ? 'good' : 'bad'}`} aria-live="polite">
+          {result.best ? (
+            <>
+              <div className="follow-k">{path.outcome === 'delivered' ? `Delivered to ${path.where}` : `Forwarded, but it reaches ${path.where}`}</div>
+              <p className="rest">
+                {result.matches.length} route{result.matches.length === 1 ? '' : 's'} matched {intToIp(result.ip)}.
+                {result.matches.length > 1 && ` The longest prefix (/${result.best.prefix}) wins over ${result.matches.slice(1).map((m) => `/${m.prefix}`).join(', ')}.`}
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="follow-k">Dropped at R1: no matching route</div>
+              <p className="rest">R1 discards it and sends ICMP "destination unreachable". A default route (0.0.0.0/0) would catch it.</p>
+            </>
+          )}
         </div>
-        <p className="faint" style={{ fontSize: 13 }}>
-          Hint for the bonus: 192.168.2.0/24 and 192.168.3.0/24 share their first 23 bits.
-        </p>
-      </div>
-    </>
+      )}
+    </div>
   );
 }

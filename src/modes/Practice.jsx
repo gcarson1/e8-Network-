@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Workspace from '../components/Workspace.jsx';
+import Page, { SessionBar } from '../components/Page.jsx';
 import { SessionSide } from '../components/SessionSide.jsx';
 import { Chips, Eyebrow, Seg } from '../components/ui.jsx';
 import { Explanation, QuestionView, keyToOption, toggleAnswer } from '../components/QuestionView.jsx';
 import { useStudy } from '../state.jsx';
 import { useNav } from '../nav.jsx';
+import { domainFor } from '../lib/bank.js';
 import { itemScore, itemStatus } from '../lib/mastery.js';
 import { fmtClock, plural, sameSet, shuffle } from '../lib/util.js';
 import { Breakdown, ReviewList, ScoreLine } from './Results.jsx';
@@ -12,11 +13,11 @@ import { Breakdown, ReviewList, ScoreLine } from './Results.jsx';
 const FOCUS = [
   { value: 'random', label: 'Mixed' },
   { value: 'weak', label: 'Weakest first' },
-  { value: 'new', label: 'New only' },
-  { value: 'missed', label: 'Missed' },
+  { value: 'new', label: 'Unseen' },
+  { value: 'missed', label: 'Not mastered' },
 ];
 
-/** Orders items weakest-first: low item score, then low category mastery, random tiebreak. */
+/** Weakest first: lowest item score, then lowest domain mastery, random tiebreak. */
 export function weakestFirst(list, items, stats) {
   return shuffle(list)
     .map((x) => ({ x, s: itemScore(items[x.id]), c: stats[x.category]?.pct ?? 0 }))
@@ -26,7 +27,7 @@ export function weakestFirst(list, items, stats) {
 
 export default function Practice({ view }) {
   const { questions, categories, items, stats, recordResults } = useStudy();
-  const { setGuard } = useNav();
+  const { setGuard, go } = useNav();
   const preset = view?.preset;
 
   const [cats, setCats] = useState(preset?.categories || categories);
@@ -46,13 +47,12 @@ export default function Practice({ view }) {
     setS({ qs, idx: 0, picks: {}, results: {}, startedAt: Date.now(), endedAt: null });
     window.scrollTo(0, 0);
   };
-
   const start = () => {
     const ordered = focus === 'weak' || focus === 'missed' ? weakestFirst(pool, items, stats) : shuffle(pool);
     begin(count === 'all' ? ordered : ordered.slice(0, count));
   };
 
-  // Presets from Home / exam results start right away.
+  // Shortcuts from Home, the mastery panel and exam results start right away.
   const started = useRef(false);
   useEffect(() => {
     if (started.current || !preset) return;
@@ -60,9 +60,10 @@ export default function Practice({ view }) {
     if (preset.ids) {
       const set = new Set(preset.ids);
       begin(shuffle(questions.filter((q) => set.has(q.id))));
+    } else if (preset.quick) {
+      begin(shuffle(questions).slice(0, 20));
     } else if (preset.categories) {
-      const list = questions.filter((q) => preset.categories.includes(q.category));
-      begin(weakestFirst(list, items, stats).slice(0, 20));
+      begin(weakestFirst(questions.filter((q) => preset.categories.includes(q.category)), items, stats).slice(0, 20));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -70,9 +71,7 @@ export default function Practice({ view }) {
   const running = s && !s.endedAt;
   const answeredCount = s ? Object.keys(s.results).length : 0;
   useEffect(() => {
-    if (running && answeredCount > 0) {
-      setGuard({ title: 'End this practice set?', body: 'Answers you already checked are saved to your mastery stats.', confirmLabel: 'End set' });
-    }
+    if (running && answeredCount > 0) setGuard({ title: 'Leave this set?', body: 'Answers you checked are already saved to your mastery.', confirmLabel: 'Leave' });
     return () => setGuard(null);
   }, [running, answeredCount, setGuard]);
 
@@ -108,7 +107,7 @@ export default function Practice({ view }) {
     if (s.idx === s.qs.length - 1) finish();
     else {
       setS((cur) => ({ ...cur, idx: cur.idx + 1 }));
-      document.querySelector('.main')?.scrollIntoView({ block: 'start' });
+      window.scrollTo(0, 0);
     }
   };
 
@@ -129,69 +128,47 @@ export default function Practice({ view }) {
     return () => window.removeEventListener('keydown', h);
   }, []);
 
-  // ================= setup =================
+  // ── setup ──
   if (!s) {
-    const available = pool.length;
-    const n = count === 'all' ? available : Math.min(count, available);
+    const n = count === 'all' ? pool.length : Math.min(count, pool.length);
     return (
-      <Workspace mainLabel="Practice setup">
-        <div className="hero">
-          <Eyebrow>Practice mode</Eyebrow>
-          <h1 style={{ marginTop: 14 }}>Answer, check, and read why, one question at a time.</h1>
-          <p className="lede" style={{ marginTop: 12 }}>
-            No time pressure. Every answer you check updates your mastery stats.
-          </p>
+      <Page label="Practice setup">
+        <div className="head">
+          <h1>Practice</h1>
+          <p>Answer, check, and read why. No timer.</p>
         </div>
-        <div className="section">
-          <div className="field">
-            <span className="label">Domains</span>
-            <div>
-              <Chips
-                options={categories.map((c) => ({ value: c, label: c, count: questions.filter((q) => q.category === c).length }))}
-                selected={cats}
-                onToggle={(c) => setCats((cur) => (cur.includes(c) ? cur.filter((x) => x !== c) : [...cur, c]))}
-              />
-              <div className="row" style={{ marginTop: 10 }}>
-                <button className="btn link small" onClick={() => setCats(categories)}>All</button>
-                <button className="btn link small" onClick={() => setCats([])}>None</button>
-              </div>
-            </div>
-          </div>
-          <div className="field">
-            <span className="label">Focus</span>
-            <div>
-              <Seg label="Question focus" value={focus} onChange={setFocus} options={FOCUS} />
-              <p className="hint">
-                {focus === 'random' && 'A random mix from the selected domains.'}
-                {focus === 'weak' && 'Unseen and missed questions first, starting with your weakest domains.'}
-                {focus === 'new' && "Only questions you haven't answered yet."}
-                {focus === 'missed' && "Questions you've answered but not mastered yet."}
-              </p>
-            </div>
-          </div>
-          <div className="field">
-            <span className="label">Questions</span>
-            <div>
-              <Seg
-                label="Number of questions"
-                value={count}
-                onChange={setCount}
-                options={[10, 20, 40, { value: 'all', label: 'All' }]}
-              />
-              <p className="hint">{available} available with these settings.</p>
-            </div>
+        <div className="field">
+          <span className="field-label">Domains</span>
+          <Chips
+            label="Domains"
+            options={categories.map((c) => ({ value: c, label: domainFor(c)?.short || c, n: questions.filter((q) => q.category === c).length }))}
+            selected={cats}
+            onToggle={(c) => setCats((cur) => (cur.includes(c) ? cur.filter((x) => x !== c) : [...cur, c]))}
+          />
+          <div className="hstack" style={{ marginLeft: -8 }}>
+            <button className="tbtn" onClick={() => setCats(categories)}>All</button>
+            <button className="tbtn" onClick={() => setCats([])}>None</button>
           </div>
         </div>
-        <div className="qfoot">
-          <button className="btn primary" onClick={start} disabled={n === 0}>
+        <div className="field">
+          <span className="field-label">Focus</span>
+          <Seg label="Focus" value={focus} onChange={setFocus} options={FOCUS} />
+        </div>
+        <div className="field">
+          <span className="field-label">Questions</span>
+          <Seg label="Number of questions" value={count} onChange={setCount} options={[10, 20, 40, { value: 'all', label: 'All' }]} />
+        </div>
+        <div className="form-foot">
+          <button className="btn primary lg" onClick={start} disabled={n === 0}>
             {n === 0 ? 'No questions match' : `Start ${plural(n, 'question')}`}
           </button>
+          <span className="faint small">{pool.length} available</span>
         </div>
-      </Workspace>
+      </Page>
     );
   }
 
-  // ================= results =================
+  // ── results ──
   if (s.endedAt) {
     const graded = s.qs
       .filter((x) => x.id in s.results)
@@ -199,124 +176,98 @@ export default function Practice({ view }) {
     const correct = graded.filter((g) => g.correct).length;
     const missedIds = graded.filter((g) => !g.correct).map((g) => g.q.id);
     return (
-      <Workspace
-        mainLabel="Practice results"
-        side={
-          <SessionSide
-            title="Results"
-            stat={`${correct}/${graded.length}`}
-            statLabel="correct"
-            cells={graded.map((g, i) => ({ state: g.correct ? 'ok' : 'bad', title: `Q${i + 1} · ${g.q.category}` }))}
-            onSelect={(i) => document.getElementById(`rv-${i}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-            legend={[{ cls: 'ok', label: 'Correct' }, { cls: 'bad', label: 'Incorrect' }]}
-          />
-        }
-      >
-        {graded.length === 0 ? (
-          <div className="section stack">
-            <Eyebrow>Practice ended</Eyebrow>
-            <p className="muted">You didn't check any answers this time.</p>
-          </div>
+      <Page label="Practice result">
+        <div className="head">
+          <Eyebrow>Practice result</Eyebrow>
+        </div>
+        {graded.length ? (
+          <ScoreLine pct={(correct / graded.length) * 100} correct={correct} total={graded.length} elapsed={(s.endedAt - s.startedAt) / 1000} />
         ) : (
-          <>
-            <div className="section stack-lg">
-              <Eyebrow>Practice complete</Eyebrow>
-              <ScoreLine pct={(correct / graded.length) * 100} correct={correct} total={graded.length} elapsed={(s.endedAt - s.startedAt) / 1000} />
-            </div>
-            <div className="section stack">
-              <Eyebrow>By domain</Eyebrow>
-              <Breakdown graded={graded} />
-            </div>
-            <div className="section stack">
-              <ReviewList graded={graded} />
-            </div>
-          </>
+          <p className="muted">No answers checked.</p>
         )}
-        <div className="qfoot">
+        <div className="form-foot" style={{ margin: '22px 0 28px' }}>
           {missedIds.length > 0 && (
             <button className="btn primary" onClick={() => begin(shuffle(questions.filter((x) => missedIds.includes(x.id))))}>
-              Retry the {missedIds.length} missed →
+              Retry the {missedIds.length} missed
             </button>
           )}
-          <button className={`btn ${missedIds.length ? 'quiet' : 'primary'}`} onClick={() => setS(null)}>
-            New practice set
-          </button>
+          <button className={missedIds.length ? 'tbtn' : 'btn primary'} onClick={() => setS(null)}>New set</button>
         </div>
-      </Workspace>
+        {graded.length > 0 && (
+          <>
+            <section className="sec">
+              <Eyebrow>By domain</Eyebrow>
+              <div style={{ marginTop: 12 }}><Breakdown graded={graded} /></div>
+            </section>
+            <section className="sec">
+              <ReviewList graded={graded} />
+            </section>
+          </>
+        )}
+      </Page>
     );
   }
 
-  // ================= running =================
+  // ── running ──
   const correctSoFar = Object.values(s.results).filter(Boolean).length;
   const ok = checked && s.results[q.id];
+  const answerText = q.correct.join(' & ');
   return (
-    <Workspace
-      mainLabel="Practice"
+    <Page
+      label="Practice"
+      bar={
+        <SessionBar
+          title="Practice"
+          onExit={() => go('home')}
+          meta={[`${correctSoFar}/${answeredCount} correct`, `${s.qs.length - answeredCount} left`]}
+          right={
+            <>
+              <span className="mono faint small hide-sm" aria-label="Elapsed time">{fmtClock((now - s.startedAt) / 1000)}</span>
+              <button className="btn" style={{ marginLeft: 10 }} onClick={finish}>Finish</button>
+            </>
+          }
+        />
+      }
       side={
         <SessionSide
           title="This set"
           stat={`${correctSoFar}/${answeredCount}`}
-          statLabel={`correct · ${s.qs.length - answeredCount} to go`}
-          cells={s.qs.map((x, i) => ({
-            state: x.id in s.results ? (s.results[x.id] ? 'ok' : 'bad') : 'empty',
-            title: `Question ${i + 1}`,
-          }))}
+          statLabel="correct"
+          cells={s.qs.map((x, i) => ({ state: x.id in s.results ? (s.results[x.id] ? 'good' : 'bad') : 'empty', title: `Question ${i + 1}` }))}
           current={s.idx}
           onSelect={(i) => setS((cur) => ({ ...cur, idx: i }))}
           legend={[
-            { cls: 'ok', label: 'Correct' },
-            { cls: 'bad', label: 'Incorrect' },
+            { cls: 'good', label: 'Correct' },
+            { cls: 'bad', label: 'Wrong' },
             { cls: '', label: 'Not yet' },
           ]}
-        >
-          <button className="btn quiet block" onClick={finish}>
-            End set & see results
-          </button>
-        </SessionSide>
+        />
       }
     >
-      <div className="qhead">
-        <span className="qnum">
-          Question <b>{s.idx + 1}</b> of {s.qs.length}
-        </span>
-        <span className="faint mono hide-sm" style={{ fontSize: 12 }}>{q.category}</span>
-        <span className="spacer" />
-        <span className="mono muted" style={{ fontSize: 13 }} aria-label="Elapsed time">
-          {fmtClock((now - s.startedAt) / 1000)}
-        </span>
+      <div className="spread qmeta">
+        <Eyebrow n={`of ${s.qs.length}`}>Question {s.idx + 1}</Eyebrow>
+        <span className="faint small">{domainFor(q.category)?.short || q.category}</span>
       </div>
-      <div className="section stack-lg" key={q.id}>
+      <div key={q.id}>
         <QuestionView q={q} selected={picks} onToggle={choose} reveal={checked} />
         {checked && (
-          <div className="stack" aria-live="polite">
-            <div className={`verdict ${ok ? 'ok' : 'bad'}`}>
-              <span className="mark">{ok ? '✓' : '✕'}</span>
-              {ok ? 'Correct' : `Incorrect. The answer is ${q.correct.join(' & ')}.`}
-            </div>
-            <Explanation text={q.explanation} />
+          <div aria-live="polite">
+            <Explanation text={q.explanation || ' '} ok={ok} label={ok ? 'Correct' : `Incorrect · answer ${answerText}`} />
           </div>
         )}
       </div>
-      <div className="qfoot">
+      <div className="qactions">
         {!checked ? (
           <>
-            <button className="btn primary" onClick={check} disabled={!canCheck}>
-              Check answer
-            </button>
-            <span className="faint" style={{ fontSize: 13 }}>
-              {q.multi ? `Pick ${q.correct.length}, then check.` : 'Pick one, then check. Enter works too.'}
-            </span>
+            <button className="btn primary" onClick={check} disabled={!canCheck}>Check</button>
+            <span className="hint hide-sm">{q.multi ? `Pick ${q.correct.length}` : 'Enter also checks'}</span>
             <span className="spacer" />
-            <button className="btn link" onClick={next}>
-              Skip
-            </button>
+            <button className="tbtn" onClick={next} style={{ marginRight: -8 }}>Skip</button>
           </>
         ) : (
-          <button className="btn primary" onClick={next}>
-            {s.idx === s.qs.length - 1 ? 'See results' : 'Next question →'}
-          </button>
+          <button className="btn primary" onClick={next}>{s.idx === s.qs.length - 1 ? 'See results' : 'Next →'}</button>
         )}
       </div>
-    </Workspace>
+    </Page>
   );
 }
