@@ -89,17 +89,23 @@ export function SessionBar({ title, meta = [], onExit, exitLabel = 'Exit', right
 
 /**
  * Page layout: top bar, main column, right rail (mastery by default).
- * Pass `bar` to swap the nav bar for a session bar.
+ * Pass `bar` to swap the nav bar for a session bar, and `footer` for a
+ * quiet line pinned to the bottom of the main column.
  */
-export default function Page({ bar, side, wide, label, children }) {
+export default function Page({ bar, side, wide, label, footer, children }) {
   return (
     <>
       {bar || <NavBar />}
-      <div className="cols">
+      <div className={`cols ${footer ? 'has-foot' : ''}`}>
         <main className="main" aria-label={label}>
           <div className={`main-in ${wide ? 'wide' : ''}`}>{children}</div>
         </main>
         {side === undefined ? <MasteryPanel /> : side}
+        {footer && (
+          <footer className="foot">
+            <div className="foot-in">{footer}</div>
+          </footer>
+        )}
       </div>
       {!bar && <MobileNav />}
     </>

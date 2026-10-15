@@ -44,7 +44,7 @@ export default function Home() {
   ];
 
   return (
-    <Page label="Home">
+    <Page label="Home" footer="Gabriel Carson | Associate Systems Engineer">
       {backup && fresh && (
         <div className="notice" role="status">
           <div className="stack-sm" style={{ flex: 1 }}>
